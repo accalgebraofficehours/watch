@@ -142,25 +142,6 @@
       height: 100%;
     }
 
-    .exit-icon {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 26px;
-      color: white;
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1; /* Always visible now */
-    }
-
     /* Decorative bubbles */
     .bubbles-container {
       position: fixed;
@@ -210,7 +191,6 @@
   </div>
 
   <div id="player" class="player">
-    <button id="exit" class="exit-icon">&times;</button>
     <iframe id="iframe" allowfullscreen></iframe>
   </div>
 
@@ -220,7 +200,6 @@
     const tvInputs = document.getElementById('tvInputs');
     const player = document.getElementById('player');
     const iframe = document.getElementById('iframe');
-    const exitBtn = document.getElementById('exit');
     const inputSection = document.getElementById('input-section');
 
     typeSelect.addEventListener('change', () => {
@@ -244,12 +223,6 @@
       iframe.src = url;
       player.style.display = 'flex';
       inputSection.style.display = 'none';
-    });
-
-    exitBtn.addEventListener('click', () => {
-      player.style.display = 'none';
-      iframe.src = '';
-      inputSection.style.display = 'block';
     });
   </script>
 </body>
