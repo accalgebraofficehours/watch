@@ -15,7 +15,7 @@
 
     .container {
       padding: 30px;
-      max-width: 900px;
+      max-width: 500px;
       margin: 0 auto;
       text-align: left;
     }
@@ -24,7 +24,7 @@
       text-align: center;
     }
 
-    input[type="text"] {
+    input[type="text"], select {
       width: 100%;
       padding: 12px;
       border: none;
@@ -36,35 +36,25 @@
       color: white;
     }
 
-    .movie-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      justify-items: center;
-    }
-
-    .movie-card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 15px;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .movie-card:hover {
-      transform: scale(1.05);
-    }
-
-    .movie-card img {
+    button {
       width: 100%;
-      height: auto;
-      border-radius: 8px;
+      padding: 12px;
+      background-color: #ff66cc;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
     }
 
-    .movie-card h3 {
-      text-align: center;
-      color: #ff66cc;
-      margin-top: 10px;
+    button:hover {
+      background-color: #ff85d8;
+    }
+
+    .hidden {
+      display: none;
     }
 
     .player {
@@ -110,77 +100,72 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>PooxieFlix Catalog</h1>
-    <input type="text" id="search" placeholder="Search for Movies or TV Shows" />
+  <div class="container" id="input-section">
+    <h1>Watch PooxieFlix</h1>
+    <p>Movies, TV, Free Forever</p>
+    <form id="form">
+      <label for="tmdbId">TMDB ID:</label>
+      <input type="text" id="tmdbId" required />
 
-    <div id="movieGrid" class="movie-grid"></div>
+      <label for="type">Type:</label>
+      <select id="type">
+        <option value="movie">Movie</option>
+        <option value="tv">TV Show</option>
+      </select>
 
-    <div id="player" class="player">
-      <button id="exit" class="exit-icon">&times;</button>
-      <iframe id="iframe" allowfullscreen></iframe>
-    </div>
+      <div id="tvInputs" class="hidden">
+        <label for="season">Season:</label>
+        <input type="number" id="season" min="1" value="1" />
+
+        <label for="episode">Episode:</label>
+        <input type="number" id="episode" min="1" value="1" />
+      </div>
+
+      <button type="submit">Watch Now</button>
+    </form>
+  </div>
+
+  <div id="player" class="player">
+    <button id="exit" class="exit-icon">&times;</button>
+    <iframe id="iframe" allowfullscreen></iframe>
   </div>
 
   <script>
-    const searchInput = document.getElementById('search');
-    const movieGrid = document.getElementById('movieGrid');
+    const form = document.getElementById('form');
+    const typeSelect = document.getElementById('type');
+    const tvInputs = document.getElementById('tvInputs');
     const player = document.getElementById('player');
     const iframe = document.getElementById('iframe');
     const exitBtn = document.getElementById('exit');
+    const inputSection = document.getElementById('input-section');
 
-    const API_KEY = '95266f5bb551bf1ae4078c918c7185e4'; // Insert your TMDB API key here
+    typeSelect.addEventListener('change', () => {
+      tvInputs.classList.toggle('hidden', typeSelect.value !== 'tv');
+    });
 
-    const fetchMovies = async (query) => {
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}&language=en-US&page=1&include_adult=false`);
-      const data = await res.json();
-      return data.results;
-    };
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('tmdbId').value.trim();
+      const type = typeSelect.value;
 
-    const renderMovies = (movies) => {
-      movieGrid.innerHTML = '';
-      movies.forEach(movie => {
-        if (movie.media_type === 'movie' || movie.media_type === 'tv') {
-          const movieCard = document.createElement('div');
-          movieCard.classList.add('movie-card');
-          movieCard.innerHTML = `
-            <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}" alt="${movie.title || movie.name}">
-            <h3>${movie.title || movie.name}</h3>
-          `;
-          movieCard.addEventListener('click', () => handleMovieClick(movie));
-          movieGrid.appendChild(movieCard);
-        }
-      });
-    };
-
-    const handleMovieClick = (movie) => {
-      const id = movie.id;
-      const type = movie.media_type;
       let url = '';
       if (type === 'movie') {
         url = `https://moviesapi.club/movie/${id}`;
-      } else if (type === 'tv') {
-        const season = 1;  // Defaulting to Season 1 for simplicity
-        const episode = 1; // Defaulting to Episode 1 for simplicity
+      } else {
+        const season = document.getElementById('season').value || 1;
+        const episode = document.getElementById('episode').value || 1;
         url = `https://moviesapi.club/tv/${id}-${season}-${episode}`;
       }
+
       iframe.src = url;
       player.style.display = 'flex';
-    };
+      inputSection.style.display = 'none';
+    });
 
     exitBtn.addEventListener('click', () => {
       player.style.display = 'none';
       iframe.src = '';
-    });
-
-    searchInput.addEventListener('input', async (e) => {
-      const query = e.target.value.trim();
-      if (query.length >= 3) { // Start searching after 3 characters
-        const results = await fetchMovies(query);
-        renderMovies(results);
-      } else {
-        movieGrid.innerHTML = '';
-      }
+      inputSection.style.display = 'block';
     });
   </script>
 </body>
