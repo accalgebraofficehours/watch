@@ -4,38 +4,157 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Watch via TMDB</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #ff66cc;
+      border: none;
+      padding: 10px 16px;
+      margin-top: 20px;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #ff85d8;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .player {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      z-index: 999;
+      display: none;
+      flex-direction: column;
+    }
+
+    .player iframe {
+      flex: 1;
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .player button {
+      background: #ff66cc;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="input-section">
     <h1>Watch via TMDB ID</h1>
     <form id="form">
-      <label>TMDB ID:</label>
+      <label for="tmdbId">TMDB ID:</label>
       <input type="text" id="tmdbId" required />
 
-      <label>Type:</label>
+      <label for="type">Type:</label>
       <select id="type">
         <option value="movie">Movie</option>
         <option value="tv">TV Show</option>
       </select>
 
       <div id="tvInputs" class="hidden">
-        <label>Season:</label>
-        <input type="number" id="season" min="1" />
+        <label for="season">Season:</label>
+        <input type="number" id="season" min="1" value="1" />
 
-        <label>Episode:</label>
-        <input type="number" id="episode" min="1" />
+        <label for="episode">Episode:</label>
+        <input type="number" id="episode" min="1" value="1" />
       </div>
 
       <button type="submit">Watch Now</button>
     </form>
   </div>
 
-  <div id="player" class="player hidden">
+  <div id="player" class="player">
     <iframe id="iframe" allowfullscreen></iframe>
     <button id="exit">Exit</button>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const form = document.getElementById('form');
+    const typeSelect = document.getElementById('type');
+    const tvInputs = document.getElementById('tvInputs');
+    const player = document.getElementById('player');
+    const iframe = document.getElementById('iframe');
+    const exitBtn = document.getElementById('exit');
+    const inputSection = document.getElementById('input-section');
+
+    typeSelect.addEventListener('change', () => {
+      tvInputs.classList.toggle('hidden', typeSelect.value !== 'tv');
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('tmdbId').value.trim();
+      const type = typeSelect.value;
+
+      let url = '';
+      if (type === 'movie') {
+        url = `https://moviesapi.club/movie/${id}`;
+      } else {
+        const season = document.getElementById('season').value || 1;
+        const episode = document.getElementById('episode').value || 1;
+        url = `https://moviesapi.club/tv/${id}-${season}-${episode}`;
+      }
+
+      iframe.src = url;
+      player.style.display = 'flex';
+      inputSection.style.display = 'none';
+    });
+
+    exitBtn.addEventListener('click', () => {
+      player.style.display = 'none';
+      iframe.src = '';
+      inputSection.style.display = 'block';
+    });
+  </script>
 </body>
 </html>
