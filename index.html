@@ -5,87 +5,124 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PooxieFlix</title>
   <style>
+    /* Background Animation */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
-      color: white;
       overflow-x: hidden;
-      position: relative;
+      background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
+      background-size: 400% 400%;
+      animation: gradientShift 20s ease infinite;
+      color: white;
     }
 
-    /* Underwater Animation */
-    .underwater {
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Bubbles Animation */
+    .bubble {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('https://www.transparenttextures.com/patterns/wood-light.png');
-      opacity: 0.1;
-      z-index: -1;
-      animation: bubbles 10s infinite;
+      bottom: -100px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: rise 15s linear infinite;
     }
 
-    @keyframes bubbles {
+    @keyframes rise {
       0% {
         transform: translateY(0) scale(1);
-      }
-      50% {
-        transform: translateY(-20px) scale(1.1);
+        opacity: 1;
       }
       100% {
-        transform: translateY(0) scale(1);
+        transform: translateY(-120vh) scale(0.5);
+        opacity: 0;
       }
     }
 
+    .bubble:nth-child(odd) {
+      width: 15px;
+      height: 15px;
+      animation-duration: 12s;
+      left: 10%;
+    }
+
+    .bubble:nth-child(even) {
+      width: 25px;
+      height: 25px;
+      animation-duration: 18s;
+      left: 80%;
+    }
+
+    /* UI Container */
     .container {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(255, 102, 204, 0.2);
       padding: 30px;
       max-width: 500px;
-      margin: 0 auto;
+      margin: 80px auto;
       text-align: left;
-      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    h1 {
+    h1, p {
       text-align: center;
-      color: #ff66cc;
     }
 
-    input[type="text"], select {
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    input, select {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: none;
       border-radius: 10px;
       font-size: 16px;
-      margin-bottom: 20px;
+      height: 44px;
       box-sizing: border-box;
       background-color: rgba(255, 255, 255, 0.1);
-      color: white;
+      color: #fff;
+      appearance: none;
+    }
+
+    input::placeholder {
+      color: #bbb;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
       background-color: #ff66cc;
       border: none;
+      padding: 12px 16px;
+      margin-top: 25px;
       border-radius: 10px;
-      font-weight: bold;
       color: white;
       cursor: pointer;
-      margin-top: 20px;
-      transition: background-color 0.3s ease;
+      font-weight: bold;
+      width: 100%;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(255, 102, 204, 0.4);
+      transition: all 0.3s ease;
     }
 
     button:hover {
       background-color: #ff85d8;
+      transform: scale(1.03);
     }
 
     .hidden {
       display: none;
     }
 
-    /* Player Styles */
+    /* Player */
     .player {
       position: fixed;
       top: 0;
@@ -96,7 +133,6 @@
       z-index: 999;
       display: none;
       flex-direction: column;
-      animation: fadeIn 0.5s ease-in-out;
     }
 
     .player iframe {
@@ -104,15 +140,6 @@
       border: none;
       width: 100%;
       height: 100%;
-    }
-
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
     }
 
     .exit-icon {
@@ -131,22 +158,44 @@
       display: none; /* Initially hidden */
       align-items: center;
       justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     .player:hover .exit-icon {
+      opacity: 1;
       display: flex; /* Show when hovering over the player */
+    }
+
+    /* Decorative bubbles */
+    .bubbles-container {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <div class="underwater"></div>
-  
+  <div class="bubbles-container">
+    <div class="bubble" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="bubble" style="left: 25%; animation-delay: 2s;"></div>
+    <div class="bubble" style="left: 40%; animation-delay: 4s;"></div>
+    <div class="bubble" style="left: 55%; animation-delay: 6s;"></div>
+    <div class="bubble" style="left: 70%; animation-delay: 8s;"></div>
+    <div class="bubble" style="left: 85%; animation-delay: 10s;"></div>
+  </div>
+
   <div class="container" id="input-section">
-    <h1>Watch PooxieFlix</h1>
+    <h1>🌊 PooxieFlix</h1>
     <p>Movies, TV, Free Forever</p>
     <form id="form">
       <label for="tmdbId">TMDB ID:</label>
-      <input type="text" id="tmdbId" required />
+      <input type="text" id="tmdbId" placeholder="e.g. 550" required />
 
       <label for="type">Type:</label>
       <select id="type">
@@ -162,7 +211,7 @@
         <input type="number" id="episode" min="1" value="1" />
       </div>
 
-      <button type="submit">Watch Now</button>
+      <button type="submit">🎬 Watch Now</button>
     </form>
   </div>
 
