@@ -162,12 +162,6 @@
       transition: opacity 0.3s ease;
     }
 
-    /* Display the exit button when hovering over the iframe */
-    .player iframe:hover + .exit-icon {
-      display: flex; /* Show the exit button on hover */
-      opacity: 1;
-    }
-
     /* Decorative bubbles */
     .bubbles-container {
       position: fixed;
@@ -230,10 +224,12 @@
     const exitBtn = document.getElementById('exit');
     const inputSection = document.getElementById('input-section');
 
+    // Show TV Inputs if TV Show is selected
     typeSelect.addEventListener('change', () => {
       tvInputs.classList.toggle('hidden', typeSelect.value !== 'tv');
     });
 
+    // Handle form submission to load the video
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const id = document.getElementById('tmdbId').value.trim();
@@ -253,10 +249,24 @@
       inputSection.style.display = 'none';
     });
 
+    // Hide player and stop video
     exitBtn.addEventListener('click', () => {
       player.style.display = 'none';
       iframe.src = '';
       inputSection.style.display = 'block';
+    });
+
+    // Show the X button when hovering over the iframe
+    iframe.addEventListener('mouseenter', () => {
+      exitBtn.style.display = 'flex';
+      exitBtn.style.opacity = 1;
+    });
+
+    iframe.addEventListener('mouseleave', () => {
+      exitBtn.style.opacity = 0;
+      setTimeout(() => {
+        if (exitBtn.style.opacity === '0') exitBtn.style.display = 'none';
+      }, 300); // Allow time for opacity to transition
     });
   </script>
 </body>
