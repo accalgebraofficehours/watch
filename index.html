@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Watch via TMDB</title>
+  <title>PooxieFlix</title>
   <style>
     body {
       margin: 0;
@@ -72,25 +72,33 @@
       height: 100%;
     }
 
-    .player button {
-      background: #ff66cc;
-      border: none;
-      padding: 12px;
-      font-size: 16px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
+    .exit-icon {
       position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 15px;
+      left: 15px;
+      font-size: 28px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
       z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .exit-icon:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
 <body>
   <div class="container" id="input-section">
-    <h1>Watch via TMDB ID</h1>
+    <h1>Watch PooxieFlix</h1>
+    <p>Movies, TV, Free Forever</p>
     <form id="form">
       <label for="tmdbId">TMDB ID:</label>
       <input type="text" id="tmdbId" required />
@@ -114,8 +122,8 @@
   </div>
 
   <div id="player" class="player">
+    <button id="exit" class="exit-icon">&times;</button>
     <iframe id="iframe" allowfullscreen></iframe>
-    <button id="exit">Exit</button>
   </div>
 
   <script>
