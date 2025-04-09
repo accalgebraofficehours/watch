@@ -256,17 +256,18 @@
       inputSection.style.display = 'block';
     });
 
-    // Show the X button when hovering over the iframe
+    // Show the exit button when hovering over the iframe
     iframe.addEventListener('mouseenter', () => {
-      exitBtn.style.display = 'flex';
-      exitBtn.style.opacity = 1;
+      exitBtn.style.display = 'flex'; // Make exit button visible
+      exitBtn.style.opacity = 1; // Ensure opacity is 1
     });
 
+    // Hide the exit button when mouse leaves the iframe
     iframe.addEventListener('mouseleave', () => {
-      exitBtn.style.opacity = 0;
+      exitBtn.style.opacity = 0; // Fade out exit button
       setTimeout(() => {
-        if (exitBtn.style.opacity === '0') exitBtn.style.display = 'none';
-      }, 300); // Allow time for opacity to transition
+        if (exitBtn.style.opacity === '0') exitBtn.style.display = 'none'; // Hide after fade
+      }, 300); // Wait for opacity transition
     });
   </script>
 </body>
