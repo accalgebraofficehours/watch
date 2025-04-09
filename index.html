@@ -5,124 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PooxieFlix</title>
   <style>
-    /* Background Animation */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow-x: hidden;
-      background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
-      background-size: 400% 400%;
-      animation: gradientShift 20s ease infinite;
+      background-color: #121212;
       color: white;
+      overflow-x: hidden;
     }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    /* Bubbles Animation */
-    .bubble {
-      position: absolute;
-      bottom: -100px;
-      width: 20px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      animation: rise 15s linear infinite;
-    }
-
-    @keyframes rise {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(-120vh) scale(0.5);
-        opacity: 0;
-      }
-    }
-
-    .bubble:nth-child(odd) {
-      width: 15px;
-      height: 15px;
-      animation-duration: 12s;
-      left: 10%;
-    }
-
-    .bubble:nth-child(even) {
-      width: 25px;
-      height: 25px;
-      animation-duration: 18s;
-      left: 80%;
-    }
-
-    /* UI Container */
     .container {
-      backdrop-filter: blur(15px);
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      box-shadow: 0 0 40px rgba(255, 102, 204, 0.2);
       padding: 30px;
-      max-width: 500px;
-      margin: 80px auto;
+      max-width: 900px;
+      margin: 0 auto;
       text-align: left;
-      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    h1, p {
+    h1 {
       text-align: center;
     }
 
-    label {
-      display: block;
-      margin-top: 15px;
-      margin-bottom: 5px;
-    }
-
-    input, select {
+    input[type="text"] {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 10px;
       font-size: 16px;
-      height: 44px;
+      margin-bottom: 20px;
       box-sizing: border-box;
       background-color: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      appearance: none;
-    }
-
-    input::placeholder {
-      color: #bbb;
-    }
-
-    button {
-      background-color: #ff66cc;
-      border: none;
-      padding: 12px 16px;
-      margin-top: 25px;
-      border-radius: 10px;
       color: white;
+    }
+
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      justify-items: center;
+    }
+
+    .movie-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
       cursor: pointer;
-      font-weight: bold;
+      transition: transform 0.3s ease;
+    }
+
+    .movie-card:hover {
+      transform: scale(1.05);
+    }
+
+    .movie-card img {
       width: 100%;
-      font-size: 16px;
-      box-shadow: 0 0 20px rgba(255, 102, 204, 0.4);
-      transition: all 0.3s ease;
+      height: auto;
+      border-radius: 8px;
     }
 
-    button:hover {
-      background-color: #ff85d8;
-      transform: scale(1.03);
+    .movie-card h3 {
+      text-align: center;
+      color: #ff66cc;
+      margin-top: 10px;
     }
 
-    .hidden {
-      display: none;
-    }
-
-    /* Player */
     .player {
       position: fixed;
       top: 0;
@@ -155,108 +99,88 @@
       height: 44px;
       cursor: pointer;
       z-index: 1000;
-      display: flex;
+      display: none; /* Initially hidden */
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
     }
 
     .player:hover .exit-icon {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* Decorative bubbles */
-    .bubbles-container {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      top: 0;
-      left: 0;
-      z-index: 0;
-      pointer-events: none;
+      display: flex; /* Show when hovering over the player */
     }
   </style>
 </head>
 <body>
-  <div class="bubbles-container">
-    <div class="bubble" style="left: 10%; animation-delay: 0s;"></div>
-    <div class="bubble" style="left: 25%; animation-delay: 2s;"></div>
-    <div class="bubble" style="left: 40%; animation-delay: 4s;"></div>
-    <div class="bubble" style="left: 55%; animation-delay: 6s;"></div>
-    <div class="bubble" style="left: 70%; animation-delay: 8s;"></div>
-    <div class="bubble" style="left: 85%; animation-delay: 10s;"></div>
-  </div>
+  <div class="container">
+    <h1>PooxieFlix Catalog</h1>
+    <input type="text" id="search" placeholder="Search for Movies or TV Shows" />
 
-  <div class="container" id="input-section">
-    <h1>🌊 PooxieFlix</h1>
-    <p>Movies, TV, Free Forever</p>
-    <form id="form">
-      <label for="tmdbId">TMDB ID:</label>
-      <input type="text" id="tmdbId" placeholder="e.g. 550" required />
+    <div id="movieGrid" class="movie-grid"></div>
 
-      <label for="type">Type:</label>
-      <select id="type">
-        <option value="movie">Movie</option>
-        <option value="tv">TV Show</option>
-      </select>
-
-      <div id="tvInputs" class="hidden">
-        <label for="season">Season:</label>
-        <input type="number" id="season" min="1" value="1" />
-
-        <label for="episode">Episode:</label>
-        <input type="number" id="episode" min="1" value="1" />
-      </div>
-
-      <button type="submit">🎬 Watch Now</button>
-    </form>
-  </div>
-
-  <div id="player" class="player">
-    <button id="exit" class="exit-icon">&times;</button>
-    <iframe id="iframe" allowfullscreen></iframe>
+    <div id="player" class="player">
+      <button id="exit" class="exit-icon">&times;</button>
+      <iframe id="iframe" allowfullscreen></iframe>
+    </div>
   </div>
 
   <script>
-    const form = document.getElementById('form');
-    const typeSelect = document.getElementById('type');
-    const tvInputs = document.getElementById('tvInputs');
+    const searchInput = document.getElementById('search');
+    const movieGrid = document.getElementById('movieGrid');
     const player = document.getElementById('player');
     const iframe = document.getElementById('iframe');
     const exitBtn = document.getElementById('exit');
-    const inputSection = document.getElementById('input-section');
 
-    typeSelect.addEventListener('change', () => {
-      tvInputs.classList.toggle('hidden', typeSelect.value !== 'tv');
-    });
+    const API_KEY = '95266f5bb551bf1ae4078c918c7185e4'; // Insert your TMDB API key here
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const id = document.getElementById('tmdbId').value.trim();
-      const type = typeSelect.value;
+    const fetchMovies = async (query) => {
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}&language=en-US&page=1&include_adult=false`);
+      const data = await res.json();
+      return data.results;
+    };
 
+    const renderMovies = (movies) => {
+      movieGrid.innerHTML = '';
+      movies.forEach(movie => {
+        if (movie.media_type === 'movie' || movie.media_type === 'tv') {
+          const movieCard = document.createElement('div');
+          movieCard.classList.add('movie-card');
+          movieCard.innerHTML = `
+            <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}" alt="${movie.title || movie.name}">
+            <h3>${movie.title || movie.name}</h3>
+          `;
+          movieCard.addEventListener('click', () => handleMovieClick(movie));
+          movieGrid.appendChild(movieCard);
+        }
+      });
+    };
+
+    const handleMovieClick = (movie) => {
+      const id = movie.id;
+      const type = movie.media_type;
       let url = '';
       if (type === 'movie') {
         url = `https://moviesapi.club/movie/${id}`;
-      } else {
-        const season = document.getElementById('season').value || 1;
-        const episode = document.getElementById('episode').value || 1;
+      } else if (type === 'tv') {
+        const season = 1;  // Defaulting to Season 1 for simplicity
+        const episode = 1; // Defaulting to Episode 1 for simplicity
         url = `https://moviesapi.club/tv/${id}-${season}-${episode}`;
       }
-
       iframe.src = url;
       player.style.display = 'flex';
-      inputSection.style.display = 'none';
-    });
+    };
 
     exitBtn.addEventListener('click', () => {
       player.style.display = 'none';
       iframe.src = '';
-      inputSection.style.display = 'block';
+    });
+
+    searchInput.addEventListener('input', async (e) => {
+      const query = e.target.value.trim();
+      if (query.length >= 3) { // Start searching after 3 characters
+        const results = await fetchMovies(query);
+        renderMovies(results);
+      } else {
+        movieGrid.innerHTML = '';
+      }
     });
   </script>
 </body>
