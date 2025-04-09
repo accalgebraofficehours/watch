@@ -155,16 +155,17 @@
       height: 44px;
       cursor: pointer;
       z-index: 1000;
-      display: none; /* Initially hidden */
+      display: none;
       align-items: center;
       justify-content: center;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
-    .player:hover .exit-icon {
+    /* Display the exit button when hovering over the iframe */
+    .player iframe:hover + .exit-icon {
+      display: flex; /* Show the exit button on hover */
       opacity: 1;
-      display: flex; /* Show when hovering over the player */
     }
 
     /* Decorative bubbles */
