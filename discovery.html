@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Discover - Pooxie Watch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pooxie Watch - Discovery</title>
   <style>
+    /* Background and animation */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
       background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
-      color: white;
+      background-size: 400% 400%;
       animation: gradientShift 20s ease infinite;
+      color: white;
     }
 
     @keyframes gradientShift {
@@ -19,157 +22,302 @@
       100% { background-position: 0% 50%; }
     }
 
-    .container {
-      padding: 20px;
-      max-width: 1200px;
-      margin: auto;
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: rise 15s linear infinite;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-120vh) scale(0.5); opacity: 0; }
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-    }
-
+    /* Card styling */
     .card {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 15px;
-      overflow: hidden;
+      position: relative;
+      width: 300px;
+      height: 450px;
+      margin: 20px;
       cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .card:hover {
-      transform: scale(1.03);
+      overflow: hidden;
+      border-radius: 15px;
+      transition: transform 0.3s ease;
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .card img {
       width: 100%;
-      height: 300px;
+      height: 100%;
       object-fit: cover;
+      transition: transform 0.3s ease;
     }
 
-    .info {
-      padding: 10px;
+    .card:hover img {
+      transform: scale(1.1);
     }
 
-    .info h3 {
-      margin: 0 0 10px;
+    .card .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover .overlay {
+      opacity: 1;
+    }
+
+    .overlay .info {
+      color: white;
+      text-align: center;
       font-size: 18px;
     }
 
-    .info small {
-      display: block;
-      color: #ccc;
-    }
-
-    .modal {
-      display: none;
+    /* Popup styles */
+    .popup {
       position: fixed;
-      z-index: 1000;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.9);
-      backdrop-filter: blur(5px);
-      padding: 40px;
-      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
 
-    .modal-content {
-      background: #1e1e2f;
-      padding: 20px;
-      border-radius: 15px;
-      max-width: 800px;
-      margin: auto;
-    }
-
-    .modal-content h2 {
-      margin-top: 0;
-    }
-
-    .modal-content p {
-      line-height: 1.5;
-    }
-
-    .close-btn {
-      background: #ff66cc;
-      border: none;
-      padding: 10px 20px;
+    .popup-content {
+      width: 80%;
+      max-width: 900px;
+      background: #222;
       border-radius: 10px;
-      color: white;
-      font-weight: bold;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .popup .banner {
+      width: 100%;
+      height: 350px;
+      background-size: cover;
+      border-radius: 10px;
+    }
+
+    .popup .details {
       margin-top: 20px;
+      color: white;
+    }
+
+    .popup .rating {
+      margin: 5px 0;
+    }
+
+    .popup .overview {
+      margin-top: 10px;
+    }
+
+    .popup .episodes {
+      display: flex;
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    .popup .episode {
+      margin-right: 15px;
       cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .popup .episode img {
+      width: 150px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Close button */
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff66cc;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    /* Search bar and button */
+    .search-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .search-container input {
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      margin-right: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .search-container button {
+      padding: 10px;
+      background-color: #ff66cc;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Discover - Pooxie Watch</h1>
-    <div class="grid" id="discover-grid"></div>
+
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="Search for movies or TV shows...">
+    <button onclick="search()">Search</button>
   </div>
 
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <h2 id="modal-title"></h2>
-      <p id="modal-overview"></p>
-      <button class="close-btn" onclick="closeModal()">Close</button>
-      <button class="close-btn" id="play-button">Play</button>
+  <div class="container" id="trending">
+    <h2>Trending</h2>
+    <div id="trending-cards" class="card-container"></div>
+  </div>
+
+  <div class="container" id="new">
+    <h2>New Releases</h2>
+    <div id="new-cards" class="card-container"></div>
+  </div>
+
+  <!-- Popup for detailed information -->
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <button class="close-btn" onclick="closePopup()">X</button>
+      <div class="banner" id="popup-banner"></div>
+      <div class="details">
+        <h2 id="popup-title"></h2>
+        <p class="rating" id="popup-rating"></p>
+        <p class="maturity" id="popup-maturity"></p>
+        <p class="overview" id="popup-overview"></p>
+      </div>
+      <div class="episodes" id="popup-episodes"></div>
+      <button id="play-button" onclick="play()">Play</button>
     </div>
   </div>
 
   <script>
     const apiKey = '95266f5bb551bf1ae4078c918c7185e4';
-    const baseImg = 'https://image.tmdb.org/t/p/w500';
-    const grid = document.getElementById('discover-grid');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalOverview = document.getElementById('modal-overview');
-    const playButton = document.getElementById('play-button');
+    const apiUrl = 'https://api.themoviedb.org/3/';
 
-    function fetchAndRender(endpoint) {
-      fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          data.results.forEach(item => {
-            const div = document.createElement('div');
-            div.classList.add('card');
-            div.innerHTML = `
-              <img src="${baseImg + item.poster_path}" alt="${item.title || item.name}"/>
-              <div class="info">
-                <h3>${item.title || item.name}</h3>
-                <small>${item.release_date || item.first_air_date || 'Unknown'} | ${item.adult ? '18+' : 'PG'}</small>
-              </div>
+    // Fetch trending movies/TV shows
+    async function fetchData(type, container) {
+      const response = await fetch(`${apiUrl}trending/${type}/week?api_key=${apiKey}`);
+      const data = await response.json();
+      const items = data.results;
+      const containerDiv = document.getElementById(container);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `
+          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title || item.name}">
+          <div class="overlay">
+            <div class="info">
+              <h3>${item.title || item.name}</h3>
+              <p>${item.release_date || item.first_air_date}</p>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', () => showPopup(item));
+        containerDiv.appendChild(card);
+      });
+    }
+
+    // Search function
+    async function search() {
+      const query = document.getElementById('search-input').value.trim();
+      const response = await fetch(`${apiUrl}search/multi?api_key=${apiKey}&query=${query}`);
+      const data = await response.json();
+      const items = data.results;
+      const containerDiv = document.getElementById('trending-cards');
+      containerDiv.innerHTML = '';
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `
+          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title || item.name}">
+          <div class="overlay">
+            <div class="info">
+              <h3>${item.title || item.name}</h3>
+              <p>${item.release_date || item.first_air_date}</p>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', () => showPopup(item));
+        containerDiv.appendChild(card);
+      });
+    }
+
+    // Show detailed popup
+    function showPopup(item) {
+      document.getElementById('popup').style.display = 'flex';
+      document.getElementById('popup-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${item.backdrop_path})`;
+      document.getElementById('popup-title').textContent = item.title || item.name;
+      document.getElementById('popup-rating').textContent = `Rating: ${item.vote_average}`;
+      document.getElementById('popup-maturity').textContent = `Maturity: ${item.adult ? '18+' : 'PG'}`;
+      document.getElementById('popup-overview').textContent = item.overview;
+
+      if (item.media_type === 'tv') {
+        document.getElementById('popup-episodes').innerHTML = '';
+        item.seasons.forEach(season => {
+          season.episodes.forEach(episode => {
+            const episodeDiv = document.createElement('div');
+            episodeDiv.classList.add('episode');
+            episodeDiv.innerHTML = `
+              <img src="https://image.tmdb.org/t/p/w500${episode.still_path}" alt="${episode.name}">
+              <p>${episode.name}</p>
             `;
-            div.onclick = () => openModal(item);
-            grid.appendChild(div);
+            episodeDiv.addEventListener('click', () => {
+              // Play episode logic
+            });
+            document.getElementById('popup-episodes').appendChild(episodeDiv);
           });
         });
+      }
+
+      document.getElementById('play-button').onclick = () => play(item);
     }
 
-    function openModal(item) {
-      modalTitle.textContent = item.title || item.name;
-      modalOverview.textContent = item.overview;
-      modal.style.display = 'block';
-      const isMovie = !!item.title;
-      playButton.onclick = () => {
-        let url = `index.html?type=${isMovie ? 'movie' : 'tv'}&id=${item.id}`;
-        window.location.href = url;
-      };
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
     }
 
-    function closeModal() {
-      modal.style.display = 'none';
+    function play(item) {
+      window.location.href = `index.html?type=${item.media_type}&id=${item.id}`;
     }
 
-    fetchAndRender('trending/all/day');
+    // Initialize
+    fetchData('movie', 'trending-cards');
+    fetchData('tv', 'new-cards');
   </script>
 </body>
 </html>
