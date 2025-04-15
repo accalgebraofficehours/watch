@@ -21,32 +21,54 @@
       100% { background-position: 0% 50%; }
     }
 
-    .bubble {
-      position: absolute;
-      bottom: -100px;
-      width: 20px;
-      height: 20px;
+    .container {
+      margin: 20px;
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .search-container input {
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      margin-right: 10px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      animation: rise 15s linear infinite;
+      color: white;
     }
 
-    @keyframes rise {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(-120vh) scale(0.5); opacity: 0; }
+    .search-container button {
+      padding: 10px;
+      background-color: #ff66cc;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
     }
 
-    /* Card styling */
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      justify-items: center;
+      margin-top: 20px;
+    }
+
     .card {
       position: relative;
-      width: 300px;
-      height: 450px;
-      margin: 20px;
+      width: 250px;
+      height: 375px;
       cursor: pointer;
       overflow: hidden;
       border-radius: 15px;
-      transition: transform 0.3s ease;
       background: rgba(255, 255, 255, 0.2);
+      transition: transform 0.3s ease;
     }
 
     .card img {
@@ -84,7 +106,6 @@
       font-size: 18px;
     }
 
-    /* Popup styles */
     .popup {
       position: fixed;
       top: 0;
@@ -146,7 +167,6 @@
       border-radius: 8px;
     }
 
-    /* Close button */
     .close-btn {
       position: absolute;
       top: 10px;
@@ -160,30 +180,13 @@
       font-size: 20px;
     }
 
-    /* Search bar and button */
-    .search-container {
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .search-container input {
-      padding: 10px;
-      width: 300px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: none;
-      margin-right: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-    }
-
-    .search-container button {
-      padding: 10px;
+    #play-button {
+      margin-top: 20px;
+      padding: 10px 20px;
       background-color: #ff66cc;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
     }
@@ -226,7 +229,6 @@
     const apiKey = '95266f5bb551bf1ae4078c918c7185e4';
     const apiUrl = 'https://api.themoviedb.org/3/';
 
-    // Fetch trending movies/TV shows
     async function fetchData(type, container) {
       const response = await fetch(`${apiUrl}trending/${type}/week?api_key=${apiKey}`);
       const data = await response.json();
@@ -250,7 +252,6 @@
       });
     }
 
-    // Search function
     async function search() {
       const query = document.getElementById('search-input').value.trim();
       const response = await fetch(`${apiUrl}search/multi?api_key=${apiKey}&query=${query}`);
@@ -276,7 +277,6 @@
       });
     }
 
-    // Show detailed popup
     function showPopup(item) {
       document.getElementById('popup').style.display = 'flex';
       document.getElementById('popup-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${item.backdrop_path})`;
