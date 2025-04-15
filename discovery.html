@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PooxieFlix Discover</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 20px;
+      text-align: center;
+      font-size: 2em;
+      background: rgba(0, 0, 0, 0.4);
+      font-weight: bold;
+    }
+
+    .search-bar {
+      text-align: center;
+      margin: 20px;
+    }
+
+    .search-bar input {
+      width: 60%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 10px;
+    }
+
+    .card-content h3 {
+      font-size: 1.1em;
+      margin: 0;
+    }
+
+    .card-content p {
+      font-size: 0.9em;
+      color: #ccc;
+      margin-top: 8px;
+      max-height: 80px;
+      overflow: hidden;
+    }
+
+    .card-content button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff66cc;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .card-content button:hover {
+      background-color: #ff85d8;
+    }
+  </style>
+</head>
+<body>
+  <header>🎬 PooxieFlix Discover</header>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search movies or TV shows...">
+  </div>
+  <div class="grid" id="results"></div>
+
+  <script>
+    const API_KEY = '95266f5bb551bf1ae4078c918c7185e4';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+
+    const resultsContainer = document.getElementById('results');
+    const searchInput = document.getElementById('searchInput');
+
+    async function fetchTrending() {
+      const [movies, tv] = await Promise.all([
+        fetch(`${BASE_URL}/trending/movie/day?api_key=${API_KEY}`).then(r => r.json()),
+        fetch(`${BASE_URL}/trending/tv/day?api_key=${API_KEY}`).then(r => r.json())
+      ]);
+      displayResults([...movies.results, ...tv.results]);
+    }
+
+    async function search(query) {
+      const [movieSearch, tvSearch] = await Promise.all([
+        fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`).then(r => r.json()),
+        fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}`).then(r => r.json())
+      ]);
+      displayResults([...movieSearch.results, ...tvSearch.results]);
+    }
+
+    function displayResults(items) {
+      resultsContainer.innerHTML = '';
+      items.forEach(item => {
+        const isTV = item.hasOwnProperty('first_air_date');
+        const id = item.id;
+        const title = isTV ? item.name : item.title;
+        const overview = item.overview || "No description available.";
+        const poster = item.poster_path ? `${IMG_BASE}${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+        const type = isTV ? 'tv' : 'movie';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${poster}" alt="${title}" />
+          <div class="card-content">
+            <h3>${title}</h3>
+            <p>${overview}</p>
+            <button onclick="play('${type}', ${id})">▶ Play</button>
+          </div>
+        `;
+        resultsContainer.appendChild(card);
+      });
+    }
+
+    function play(type, id) {
+      const url = `watch.html?type=${type}&id=${id}${type === 'tv' ? '&season=1&episode=1' : ''}`;
+      window.location.href = url;
+    }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      if (query.length > 2) {
+        search(query);
+      } else {
+        fetchTrending();
+      }
+    });
+
+    // Load trending on page load
+    fetchTrending();
+  </script>
+</body>
+</html>
