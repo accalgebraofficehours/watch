@@ -21,15 +21,12 @@
                     return null;
                 };
             } catch (e) {
-                // Cross-origin iframes may not allow access
                 console.warn("Could not block iframe popup (cross-origin).");
             }
         });
     });
-</script>
-
+  </script>
   <style>
-    /* Background Animation */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -46,7 +43,6 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* Bubbles Animation */
     .bubble {
       position: absolute;
       bottom: -100px;
@@ -82,7 +78,6 @@
       left: 80%;
     }
 
-    /* UI Container */
     .container {
       backdrop-filter: blur(15px);
       background: rgba(255, 255, 255, 0.05);
@@ -146,7 +141,6 @@
       display: none;
     }
 
-    /* Player */
     .player {
       position: fixed;
       top: 0;
@@ -166,7 +160,6 @@
       height: 100%;
     }
 
-    /* Decorative bubbles */
     .bubbles-container {
       position: fixed;
       width: 100%;
@@ -192,12 +185,9 @@
   <div class="container" id="input-section">
     <h1>🌊 Pooxie Watch</h1>
     <p>Movies, TV, Free Forever</p>
-    <p><B>Do not click on any links opened in the video player.</B></p>
+    <p><b>Do not click on any links opened in the video player.</b></p>
     <p>Videos are hosted by MoviesAPI and all DMCA actions should be processed through them</p>
     <p>We do not host any material, and therefore have no control over it</p>
-     <a href="https://accalgebraofficehours.github.io/movie-finder/">
-      <button>Get movie IDs</button>
-    </a>
     <form id="form">
       <label for="tmdbId">TMDB ID:</label>
       <input type="text" id="tmdbId" placeholder="e.g. 550" required />
@@ -240,19 +230,47 @@
       e.preventDefault();
       const id = document.getElementById('tmdbId').value.trim();
       const type = typeSelect.value;
+      const season = document.getElementById('season').value || 1;
+      const episode = document.getElementById('episode').value || 1;
+      launchPlayer(type, id, season, episode);
+    });
 
+    function launchPlayer(type, id, season = 1, episode = 1) {
       let url = '';
       if (type === 'movie') {
         url = `https://moviesapi.club/movie/${id}`;
       } else {
-        const season = document.getElementById('season').value || 1;
-        const episode = document.getElementById('episode').value || 1;
         url = `https://moviesapi.club/tv/${id}-${season}-${episode}`;
       }
 
       iframe.src = url;
       player.style.display = 'flex';
       inputSection.style.display = 'none';
+    }
+
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        type: params.get('type'),
+        id: params.get('id'),
+        season: params.get('season') || 1,
+        episode: params.get('episode') || 1
+      };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const { type, id, season, episode } = getQueryParams();
+
+      if (type && id) {
+        document.getElementById('tmdbId').value = id;
+        document.getElementById('type').value = type;
+        if (type === 'tv') {
+          tvInputs.classList.remove('hidden');
+          document.getElementById('season').value = season;
+          document.getElementById('episode').value = episode;
+        }
+        launchPlayer(type, id, season, episode);
+      }
     });
   </script>
 </body>
