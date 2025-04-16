@@ -91,6 +91,112 @@
     .card-content button:hover {
       background-color: #ff85d8;
     }
+
+    /* New styles for categories */
+    .category-section {
+      margin: 30px 20px 10px;
+    }
+
+    .category-title {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #ff66cc;
+      display: inline-block;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 0 20px;
+      overflow-x: auto;
+      scrollbar-width: none; /* Firefox */
+    }
+
+    .category-tabs::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+
+    .category-tab {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+
+    .category-tab:hover, .category-tab.active {
+      background: #ff66cc;
+    }
+
+    /* Modal styles for season/episode selection */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #302b63;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: #ff66cc;
+    }
+
+    .season-select, .episode-select {
+      margin-bottom: 20px;
+    }
+
+    .season-select select, .episode-select select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      background: #24243e;
+      color: white;
+      border: none;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .play-btn {
+      background: #ff66cc;
+      color: white;
+    }
+
+    .cancel-btn {
+      background: #24243e;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -98,7 +204,41 @@
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search movies or TV shows...">
   </div>
-  <div class="grid" id="results"></div>
+
+  <div class="category-tabs" id="categoryTabs">
+    <div class="category-tab active" data-category="trending">Trending</div>
+    <div class="category-tab" data-category="popular">Popular</div>
+    <div class="category-tab" data-category="top_rated">Top Rated</div>
+    <div class="category-tab" data-category="sci_fi">Sci-Fi</div>
+    <div class="category-tab" data-category="dystopian">Dystopian</div>
+    <div class="category-tab" data-category="action">Action</div>
+    <div class="category-tab" data-category="comedy">Comedy</div>
+    <div class="category-tab" data-category="horror">Horror</div>
+  </div>
+
+  <div class="category-section">
+    <div class="category-title" id="currentCategory">Trending</div>
+    <div class="grid" id="results"></div>
+  </div>
+
+  <!-- Modal for TV show season/episode selection -->
+  <div class="modal" id="tvModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">Select Season and Episode</div>
+      <div class="season-select">
+        <label for="seasonSelect">Season:</label>
+        <select id="seasonSelect"></select>
+      </div>
+      <div class="episode-select">
+        <label for="episodeSelect">Episode:</label>
+        <select id="episodeSelect"></select>
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="cancelBtn">Cancel</button>
+        <button class="play-btn" id="confirmPlayBtn">Play</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API_KEY = '95266f5bb551bf1ae4078c918c7185e4';
@@ -107,11 +247,62 @@
 
     const resultsContainer = document.getElementById('results');
     const searchInput = document.getElementById('searchInput');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const currentCategoryTitle = document.getElementById('currentCategory');
+    const tvModal = document.getElementById('tvModal');
+    const seasonSelect = document.getElementById('seasonSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+    const confirmPlayBtn = document.getElementById('confirmPlayBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const modalTitle = document.getElementById('modalTitle');
+
+    // Store current TV show info for modal
+    let currentTvShow = {
+      id: null,
+      title: null,
+      seasons: []
+    };
+
+    // Genre IDs mapping
+    const GENRE_IDS = {
+      sci_fi: 878,
+      dystopian: 878, // Note: Dystopian often falls under Sci-Fi
+      action: 28,
+      comedy: 35,
+      horror: 27
+    };
 
     async function fetchTrending() {
       const [movies, tv] = await Promise.all([
         fetch(`${BASE_URL}/trending/movie/day?api_key=${API_KEY}`).then(r => r.json()),
         fetch(`${BASE_URL}/trending/tv/day?api_key=${API_KEY}`).then(r => r.json())
+      ]);
+      displayResults([...movies.results, ...tv.results]);
+    }
+
+    async function fetchPopular() {
+      const [movies, tv] = await Promise.all([
+        fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}`).then(r => r.json()),
+        fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}`).then(r => r.json())
+      ]);
+      displayResults([...movies.results, ...tv.results]);
+    }
+
+    async function fetchTopRated() {
+      const [movies, tv] = await Promise.all([
+        fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}`).then(r => r.json()),
+        fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}`).then(r => r.json())
+      ]);
+      displayResults([...movies.results, ...tv.results]);
+    }
+
+    async function fetchByGenre(genreName) {
+      const genreId = GENRE_IDS[genreName];
+      if (!genreId) return;
+      
+      const [movies, tv] = await Promise.all([
+        fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}`).then(r => r.json()),
+        fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}`).then(r => r.json())
       ]);
       displayResults([...movies.results, ...tv.results]);
     }
@@ -141,24 +332,140 @@
           <div class="card-content">
             <h3>${title}</h3>
             <p>${overview}</p>
-            <button onclick="play('${type}', ${id})">▶ Play</button>
+            <button onclick="handlePlayClick('${type}', ${id}, '${title.replace(/'/g, "\\'")}')">▶ Play</button>
           </div>
         `;
         resultsContainer.appendChild(card);
       });
     }
 
-    function play(type, id) {
-      const url = `watch.html?type=${type}&id=${id}${type === 'tv' ? '&season=1&episode=1' : ''}`;
+    async function handlePlayClick(type, id, title) {
+      if (type === 'tv') {
+        // Show modal for TV shows
+        currentTvShow.id = id;
+        currentTvShow.title = title;
+        await showSeasonSelection(id);
+        tvModal.style.display = 'flex';
+      } else {
+        // Directly play movies
+        play(type, id);
+      }
+    }
+
+    async function showSeasonSelection(tvId) {
+      // Fetch TV show details to get seasons
+      const response = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
+      const tvDetails = await response.json();
+      
+      currentTvShow.seasons = tvDetails.seasons.filter(season => season.season_number > 0);
+      
+      // Populate season select
+      seasonSelect.innerHTML = '';
+      currentTvShow.seasons.forEach(season => {
+        const option = document.createElement('option');
+        option.value = season.season_number;
+        option.textContent = `Season ${season.season_number}`;
+        seasonSelect.appendChild(option);
+      });
+      
+      // Set modal title
+      modalTitle.textContent = `Select Season and Episode: ${currentTvShow.title}`;
+      
+      // Load episodes for first season by default
+      await loadEpisodesForSeason(currentTvShow.id, currentTvShow.seasons[0].season_number);
+    }
+
+    async function loadEpisodesForSeason(tvId, seasonNumber) {
+      const response = await fetch(`${BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`);
+      const seasonDetails = await response.json();
+      
+      // Populate episode select
+      episodeSelect.innerHTML = '';
+      seasonDetails.episodes.forEach(episode => {
+        const option = document.createElement('option');
+        option.value = episode.episode_number;
+        option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
+        episodeSelect.appendChild(option);
+      });
+    }
+
+    function play(type, id, season = null, episode = null) {
+      let url = `watch.html?type=${type}&id=${id}`;
+      if (type === 'tv' && season !== null && episode !== null) {
+        url += `&season=${season}&episode=${episode}`;
+      }
       window.location.href = url;
     }
+
+    // Event listeners for modal
+    seasonSelect.addEventListener('change', async () => {
+      const seasonNumber = parseInt(seasonSelect.value);
+      await loadEpisodesForSeason(currentTvShow.id, seasonNumber);
+    });
+
+    confirmPlayBtn.addEventListener('click', () => {
+      const season = parseInt(seasonSelect.value);
+      const episode = parseInt(episodeSelect.value);
+      tvModal.style.display = 'none';
+      play('tv', currentTvShow.id, season, episode);
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      tvModal.style.display = 'none';
+    });
+
+    // Handle category tab clicks
+    categoryTabs.addEventListener('click', (e) => {
+      if (e.target.classList.contains('category-tab')) {
+        // Update active tab
+        document.querySelectorAll('.category-tab').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        
+        const category = e.target.dataset.category;
+        currentCategoryTitle.textContent = e.target.textContent;
+        
+        // Fetch content based on category
+        switch(category) {
+          case 'trending':
+            fetchTrending();
+            break;
+          case 'popular':
+            fetchPopular();
+            break;
+          case 'top_rated':
+            fetchTopRated();
+            break;
+          default:
+            fetchByGenre(category);
+        }
+      }
+    });
 
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.trim();
       if (query.length > 2) {
         search(query);
-      } else {
-        fetchTrending();
+      } else if (query.length === 0) {
+        // Reset to current category when search is cleared
+        const activeTab = document.querySelector('.category-tab.active');
+        if (activeTab) {
+          const category = activeTab.dataset.category;
+          switch(category) {
+            case 'trending':
+              fetchTrending();
+              break;
+            case 'popular':
+              fetchPopular();
+              break;
+            case 'top_rated':
+              fetchTopRated();
+              break;
+            default:
+              fetchByGenre(category);
+          }
+        }
       }
     });
 
