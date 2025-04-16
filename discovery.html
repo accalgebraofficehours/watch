@@ -50,11 +50,13 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.3s ease;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     .card:hover {
       transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 102, 204, 0.5);
     }
 
     .card img {
@@ -103,18 +105,7 @@
       background-color: #ff85d8;
     }
 
-    .category-section {
-      margin: 30px 20px 10px;
-    }
-
-    .category-title {
-      font-size: 1.5em;
-      margin-bottom: 15px;
-      padding-bottom: 5px;
-      border-bottom: 2px solid #ff66cc;
-      display: inline-block;
-    }
-
+    /* Category tabs */
     .category-tabs {
       display: flex;
       gap: 10px;
@@ -141,37 +132,20 @@
       background: #ff66cc;
     }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
+    .category-section {
+      margin: 30px 20px 10px;
     }
 
-    .modal-content {
-      background: #302b63;
-      padding: 20px;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 500px;
-      max-height: 80vh;
-      overflow-y: auto;
+    .category-title {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #ff66cc;
+      display: inline-block;
     }
 
-    .loading {
-      text-align: center;
-      padding: 20px;
-      font-size: 1.2em;
-      color: #ff66cc;
-    }
-        .modal {
-      display: none;
+    /* Detail Overlay */
+    .detail-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -179,150 +153,232 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.9);
       z-index: 1000;
+      display: none;
       justify-content: center;
       align-items: center;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
     }
 
-    .modal-content {
+    .detail-container {
+      width: 80%;
+      max-width: 800px;
       background: linear-gradient(135deg, #24243e, #302b63);
-      padding: 25px;
       border-radius: 15px;
-      width: 85%;
-      max-width: 450px;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 0 30px rgba(255, 102, 204, 0.3);
-      border: 1px solid #ff66cc;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(255, 102, 204, 0.3);
     }
 
-    .modal-title {
-      font-size: 1.5em;
-      margin-bottom: 20px;
-      color: #ff66cc;
-      text-align: center;
-      font-weight: bold;
+    .detail-header {
+      position: relative;
+      height: 400px;
+      background-size: cover;
+      background-position: center;
     }
 
-    .season-select, .episode-select {
-      margin-bottom: 20px;
+    .detail-header::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 150px;
+      background: linear-gradient(to top, #24243e, transparent);
     }
 
-    .season-select label, .episode-select label {
-      display: block;
-      margin-bottom: 8px;
-      color: #ff85d8;
-      font-weight: 600;
-    }
-
-    .season-select select, .episode-select select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      color: white;
-      border: 1px solid #ff66cc;
-      font-size: 16px;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      background-size: 20px;
-    }
-
-    .modal-buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      margin-top: 25px;
-    }
-
-    .modal-buttons button {
-      padding: 12px 20px;
+    .detail-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      flex: 1;
-    }
-
-    .play-btn {
-      background: linear-gradient(to right, #ff66cc, #ff85d8);
       color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.5em;
+      cursor: pointer;
+      z-index: 2;
     }
 
-    .play-btn:hover {
-      background: linear-gradient(to right, #ff85d8, #ff66cc);
-      box-shadow: 0 0 15px rgba(255, 102, 204, 0.5);
+    .detail-meta {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 2;
+      display: flex;
+      gap: 15px;
+      align-items: center;
     }
 
-    .cancel-btn {
+    .detail-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9em;
+    }
+
+    .detail-meta-rating {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .detail-body {
+      padding: 30px;
+    }
+
+    .detail-title {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .detail-buttons {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .detail-btn {
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .detail-btn-play {
+      background: #ff66cc;
+      color: white;
+      border: none;
+    }
+
+    .detail-btn-play:hover {
+      background: #ff85d8;
+    }
+
+    .detail-btn-secondary {
       background: rgba(255, 255, 255, 0.1);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    .cancel-btn:hover {
+    .detail-btn-secondary:hover {
       background: rgba(255, 255, 255, 0.2);
     }
 
-    /* Loading spinner for episodes */
-    .episode-loading {
+    .detail-overview {
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .detail-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .detail-info-item h4 {
+      margin: 0 0 5px 0;
+      color: #ff66cc;
+      font-size: 0.9em;
+    }
+
+    .detail-info-item p {
+      margin: 0;
+      font-size: 0.9em;
+    }
+
+    /* Loading indicator */
+    .loading {
       text-align: center;
-      padding: 15px;
+      padding: 20px;
+      font-size: 1.2em;
       color: #ff66cc;
       display: none;
     }
 
     /* Responsive adjustments */
-    @media (max-width: 600px) {
-      .modal-content {
+    @media (max-width: 768px) {
+      .detail-container {
         width: 95%;
-        padding: 15px;
+      }
+      
+      .detail-header {
+        height: 300px;
+      }
+      
+      .detail-body {
+        padding: 20px;
       }
     }
   </style>
 </head>
 <body>
-  <header>🎬 Pooxie Watch</header>
+  <header>🎬 Discovery</header>
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search movies or TV shows...">
   </div>
-
   <div class="category-tabs" id="categoryTabs">
-    <div class="category-tab" data-category="trending">Trending</div>
     <div class="category-tab active" data-category="popular">Popular</div>
+    <div class="category-tab" data-category="trending">Trending</div>
     <div class="category-tab" data-category="top_rated">Top Rated</div>
     <div class="category-tab" data-category="action">Action</div>
     <div class="category-tab" data-category="comedy">Comedy</div>
     <div class="category-tab" data-category="sci_fi">Sci-Fi</div>
-    <div class="category-tab" data-category="drama">Drama</div>
-    <div class="category-tab" data-category="animation">Animation</div>
   </div>
-
   <div class="category-section">
-    <div class="category-title" id="currentCategory">Trending</div>
+    <div class="category-title" id="currentCategory">Popular</div>
     <div class="grid" id="results"></div>
-    <div class="loading" id="loadingIndicator" style="display: none;">Loading more content...</div>
+    <div class="loading" id="loadingIndicator">Loading more content...</div>
   </div>
 
-  <!-- Modal for TV show season/episode selection -->
-  <div class="modal" id="tvModal">
-    <div class="modal-content">
-      <div class="modal-title" id="modalTitle">Select Season and Episode</div>
-      <div class="season-select">
-        <label for="seasonSelect">Season:</label>
-        <select id="seasonSelect"></select>
+  <!-- Detail Overlay -->
+  <div class="detail-overlay" id="detailOverlay">
+    <div class="detail-container">
+      <div class="detail-header" id="detailHeader">
+        <button class="detail-close" id="detailClose">&times;</button>
+        <div class="detail-meta">
+          <div class="detail-meta-item">
+            <span class="detail-meta-rating" id="detailRating">PG-13</span>
+          </div>
+          <div class="detail-meta-item">
+            <span id="detailYear">2023</span>
+          </div>
+          <div class="detail-meta-item">
+            <span id="detailRuntime">2h 18m</span>
+          </div>
+          <div class="detail-meta-item">
+            <span id="detailScore">⭐ 8.4/10</span>
+          </div>
+        </div>
       </div>
-      <div class="episode-select">
-        <label for="episodeSelect">Episode:</label>
-        <select id="episodeSelect"></select>
-      </div>
-      <div class="modal-buttons">
-        <button class="cancel-btn" id="cancelBtn">Cancel</button>
-        <button class="play-btn" id="confirmPlayBtn">Play</button>
+      <div class="detail-body">
+        <h2 class="detail-title" id="detailTitle">Movie Title</h2>
+        <div class="detail-buttons">
+          <button class="detail-btn detail-btn-play" id="detailPlay">▶ Play</button>
+          <button class="detail-btn detail-btn-secondary">+ My List</button>
+        </div>
+        <p class="detail-overview" id="detailOverview">Overview text goes here...</p>
+        <div class="detail-info">
+          <div class="detail-info-item">
+            <h4>Cast</h4>
+            <p id="detailCast">Actor 1, Actor 2, Actor 3</p>
+          </div>
+          <div class="detail-info-item">
+            <h4>Genre</h4>
+            <p id="detailGenre">Action, Adventure</p>
+          </div>
+          <div class="detail-info-item">
+            <h4>Director</h4>
+            <p id="detailDirector">Director Name</p>
+          </div>
+          <div class="detail-info-item">
+            <h4>Release Date</h4>
+            <p id="detailRelease">January 1, 2023</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -330,7 +386,7 @@
   <script>
     const API_KEY = '95266f5bb551bf1ae4078c918c7185e4';
     const BASE_URL = 'https://api.themoviedb.org/3';
-    const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/';
 
     // DOM Elements
     const resultsContainer = document.getElementById('results');
@@ -338,27 +394,34 @@
     const categoryTabs = document.getElementById('categoryTabs');
     const currentCategoryTitle = document.getElementById('currentCategory');
     const loadingIndicator = document.getElementById('loadingIndicator');
-    const tvModal = document.getElementById('tvModal');
+    const detailOverlay = document.getElementById('detailOverlay');
+    const detailClose = document.getElementById('detailClose');
+    const detailHeader = document.getElementById('detailHeader');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailRating = document.getElementById('detailRating');
+    const detailYear = document.getElementById('detailYear');
+    const detailRuntime = document.getElementById('detailRuntime');
+    const detailScore = document.getElementById('detailScore');
+    const detailOverview = document.getElementById('detailOverview');
+    const detailCast = document.getElementById('detailCast');
+    const detailGenre = document.getElementById('detailGenre');
+    const detailDirector = document.getElementById('detailDirector');
+    const detailRelease = document.getElementById('detailRelease');
+    const detailPlay = document.getElementById('detailPlay');
 
-    // State management
-    let currentPage = 1;
+    // State
+    let currentMedia = {};
     let currentCategory = 'popular';
+    let currentPage = 1;
     let isLoading = false;
     let hasMoreContent = true;
     let currentSearchQuery = '';
-    let currentTvShow = {
-      id: null,
-      title: null,
-      seasons: []
-    };
 
-    // Genre IDs mapping (no duplicates)
+    // Genre IDs mapping
     const GENRE_IDS = {
       action: 28,
       comedy: 35,
-      sci_fi: 878,
-      drama: 18,
-      animation: 16
+      sci_fi: 878
     };
 
     // Initialize
@@ -367,7 +430,13 @@
       setupInfiniteScroll();
     });
 
-    // Infinite scroll setup
+    // Event Listeners
+    categoryTabs.addEventListener('click', handleCategoryClick);
+    searchInput.addEventListener('input', handleSearch);
+    detailClose.addEventListener('click', () => detailOverlay.style.display = 'none');
+    detailPlay.addEventListener('click', handlePlayClick);
+
+    // Setup infinite scroll
     function setupInfiniteScroll() {
       window.addEventListener('scroll', () => {
         if (isLoading || !hasMoreContent) return;
@@ -402,89 +471,39 @@
       currentCategory = category;
       currentPage = page;
       
-      let movies = [], tv = [];
-      
-      try {
-        switch(category) {
-          case 'popular':
-            [movies, tv] = await Promise.all([
-              fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`).then(r => r.json()),
-              fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${page}`).then(r => r.json())
-            ]);
-            break;
-          case 'trending':
-            [movies, tv] = await Promise.all([
-              fetch(`${BASE_URL}/trending/movie/day?api_key=${API_KEY}&page=${page}`).then(r => r.json()),
-              fetch(`${BASE_URL}/trending/tv/day?api_key=${API_KEY}&page=${page}`).then(r => r.json())
-            ]);
-            break;
-          case 'top_rated':
-            [movies, tv] = await Promise.all([
-              fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}&page=${page}`).then(r => r.json()),
-              fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&page=${page}`).then(r => r.json())
-            ]);
-            break;
-          default:
-            if (GENRE_IDS[category]) {
-              [movies, tv] = await Promise.all([
-                fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${GENRE_IDS[category]}&page=${page}`).then(r => r.json()),
-                fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${GENRE_IDS[category]}&page=${page}`).then(r => r.json())
-              ]);
-            }
-        }
+      let url;
+      switch(category) {
+        case 'popular':
+          url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`;
+          break;
+        case 'trending':
+          url = `${BASE_URL}/trending/movie/day?api_key=${API_KEY}&page=${page}`;
+          break;
+        case 'top_rated':
+          url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&page=${page}`;
+          break;
+        default:
+          if (GENRE_IDS[category]) {
+            url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${GENRE_IDS[category]}&page=${page}`;
+          }
+      }
 
-        // Combine results with TV shows first
-        const combinedResults = [...tv.results, ...movies.results];
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
         
         if (page === 1) {
           resultsContainer.innerHTML = '';
           hasMoreContent = true;
         }
         
-        displayResults(combinedResults);
+        displayResults(data.results);
         
-        // Check if we've reached the end
-        if (page >= (movies.total_pages || tv.total_pages)) {
+        if (page >= data.total_pages) {
           hasMoreContent = false;
         }
       } catch (error) {
         console.error('Error fetching content:', error);
-      }
-    }
-
-    async function search(query, page = 1) {
-      currentSearchQuery = query;
-      
-      if (query.length < 3) {
-        if (query.length === 0) {
-          currentSearchQuery = '';
-          fetchContent(currentCategory);
-        }
-        return;
-      }
-
-      try {
-        const [movieSearch, tvSearch] = await Promise.all([
-          fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`).then(r => r.json()),
-          fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`).then(r => r.json())
-        ]);
-
-        // Combine results with TV shows first
-        const combinedResults = [...tvSearch.results, ...movieSearch.results];
-        
-        if (page === 1) {
-          resultsContainer.innerHTML = '';
-          hasMoreContent = true;
-        }
-        
-        displayResults(combinedResults);
-        
-        // Check if we've reached the end
-        if (page >= (movieSearch.total_pages || tvSearch.total_pages)) {
-          hasMoreContent = false;
-        }
-      } catch (error) {
-        console.error('Error searching:', error);
       }
     }
 
@@ -497,128 +516,145 @@
       }
 
       items.forEach(item => {
-        const isTV = item.hasOwnProperty('first_air_date');
-        const id = item.id;
-        const title = isTV ? item.name : item.title;
-        const overview = item.overview || "No description available.";
-        const poster = item.poster_path ? `${IMG_BASE}${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
-        const type = isTV ? 'tv' : 'movie';
-
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <img src="${poster}" alt="${title}" loading="lazy" />
+          <img src="${item.poster_path ? IMG_BASE + 'w500' + item.poster_path : 'https://via.placeholder.com/500x750?text=No+Image'}" alt="${item.title}" loading="lazy">
           <div class="card-content">
-            <h3>${title}</h3>
-            <p>${overview}</p>
-            <button onclick="handlePlayClick('${type}', ${id}, '${title.replace(/'/g, "\\'")}')">▶ Play</button>
+            <h3>${item.title}</h3>
+            <p>${item.overview || "No description available."}</p>
           </div>
         `;
+        card.addEventListener('click', () => showDetails(item));
         resultsContainer.appendChild(card);
       });
     }
 
-    // TV Show Modal Functions
-    async function showSeasonSelection(tvId) {
+    async function showDetails(item) {
       try {
-        const response = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
-        const tvDetails = await response.json();
+        // Show loading state
+        detailHeader.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3))';
+        detailTitle.textContent = 'Loading...';
+        detailOverview.textContent = '';
+        detailOverlay.style.display = 'flex';
+
+        // Fetch additional details
+        const [details, credits] = await Promise.all([
+          fetch(`${BASE_URL}/movie/${item.id}?api_key=${API_KEY}`).then(r => r.json()),
+          fetch(`${BASE_URL}/movie/${item.id}/credits?api_key=${API_KEY}`).then(r => r.json())
+        ]);
+
+        // Set background image
+        if (details.backdrop_path) {
+          detailHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${IMG_BASE}original${details.backdrop_path})`;
+        }
+
+        // Set text content
+        detailTitle.textContent = details.title;
         
-        currentTvShow = {
-          id: tvId,
-          title: tvDetails.name,
-          seasons: tvDetails.seasons.filter(season => season.season_number > 0)
+        // Get US certification or default to NR
+        const releaseDates = await fetch(`${BASE_URL}/movie/${item.id}/release_dates?api_key=${API_KEY}`).then(r => r.json());
+        const usCert = releaseDates.results.find(r => r.iso_3166_1 === 'US')?.release_dates[0]?.certification;
+        detailRating.textContent = usCert || 'NR';
+        
+        detailYear.textContent = new Date(details.release_date).getFullYear();
+        
+        // Format runtime
+        if (details.runtime) {
+          const hours = Math.floor(details.runtime / 60);
+          const mins = details.runtime % 60;
+          detailRuntime.textContent = `${hours}h ${mins}m`;
+        } else {
+          detailRuntime.textContent = 'N/A';
+        }
+        
+        detailScore.textContent = `⭐ ${details.vote_average?.toFixed(1) || 'N/A'}/10`;
+        detailOverview.textContent = details.overview || 'No overview available.';
+        
+        // Get top 3 cast members
+        const cast = credits.cast.slice(0, 3).map(p => p.name).join(', ');
+        detailCast.textContent = cast || 'N/A';
+        
+        // Get genres
+        const genres = details.genres?.map(g => g.name).join(', ');
+        detailGenre.textContent = genres || 'N/A';
+        
+        // Get director
+        const director = credits.crew?.find(p => p.job === 'Director')?.name;
+        detailDirector.textContent = director || 'N/A';
+        
+        // Format release date
+        if (details.release_date) {
+          detailRelease.textContent = new Date(details.release_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+        } else {
+          detailRelease.textContent = 'N/A';
+        }
+        
+        // Store current media for play button
+        currentMedia = {
+          id: details.id,
+          type: 'movie'
         };
         
-        // Populate season select
-        seasonSelect.innerHTML = '';
-        currentTvShow.seasons.forEach(season => {
-          const option = document.createElement('option');
-          option.value = season.season_number;
-          option.textContent = `Season ${season.season_number}`;
-          seasonSelect.appendChild(option);
-        });
-        
-        // Load episodes for first season
-        await loadEpisodesForSeason(currentTvShow.id, currentTvShow.seasons[0].season_number);
-        tvModal.style.display = 'flex';
       } catch (error) {
-        console.error('Error loading seasons:', error);
+        console.error('Error loading details:', error);
+        detailTitle.textContent = 'Error loading details';
+        detailOverview.textContent = 'Please try again later.';
       }
     }
 
-    async function loadEpisodesForSeason(tvId, seasonNumber) {
-      try {
-        const response = await fetch(`${BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`);
-        const seasonDetails = await response.json();
-        
-        episodeSelect.innerHTML = '';
-        seasonDetails.episodes.forEach(episode => {
-          const option = document.createElement('option');
-          option.value = episode.episode_number;
-          option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
-          episodeSelect.appendChild(option);
-        });
-      } catch (error) {
-        console.error('Error loading episodes:', error);
-      }
+    function handlePlayClick() {
+      window.location.href = `watch.html?type=${currentMedia.type}&id=${currentMedia.id}`;
     }
 
-    // Event Handlers
-    function handlePlayClick(type, id, title) {
-      if (type === 'tv') {
-        showSeasonSelection(id);
-      } else {
-        play(type, id);
-      }
-    }
-
-    function play(type, id, season = null, episode = null) {
-      let url = `watch.html?type=${type}&id=${id}`;
-      if (type === 'tv' && season !== null && episode !== null) {
-        url += `&season=${season}&episode=${episode}`;
-      }
-      window.location.href = url;
-    }
-
-    categoryTabs.addEventListener('click', (e) => {
+    function handleCategoryClick(e) {
       if (e.target.classList.contains('category-tab')) {
         document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
         e.target.classList.add('active');
-        
-        const category = e.target.dataset.category;
+        currentCategory = e.target.dataset.category;
         currentCategoryTitle.textContent = e.target.textContent;
-        fetchContent(category);
+        currentPage = 1;
+        fetchContent(currentCategory);
       }
-    });
+    }
 
-    searchInput.addEventListener('input', () => {
+    function handleSearch() {
       const query = searchInput.value.trim();
       currentSearchQuery = query;
       
       if (query.length > 2) {
+        currentPage = 1;
         search(query);
       } else if (query.length === 0) {
+        currentSearchQuery = '';
+        currentPage = 1;
         fetchContent(currentCategory);
       }
-    });
+    }
 
-    // Modal event listeners
-    seasonSelect.addEventListener('change', async () => {
-      const seasonNumber = parseInt(seasonSelect.value);
-      await loadEpisodesForSeason(currentTvShow.id, seasonNumber);
-    });
-
-    confirmPlayBtn.addEventListener('click', () => {
-      const season = parseInt(seasonSelect.value);
-      const episode = parseInt(episodeSelect.value);
-      tvModal.style.display = 'none';
-      play('tv', currentTvShow.id, season, episode);
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      tvModal.style.display = 'none';
-    });
+    async function search(query, page = 1) {
+      try {
+        const response = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`);
+        const data = await response.json();
+        
+        if (page === 1) {
+          resultsContainer.innerHTML = '';
+          hasMoreContent = true;
+        }
+        
+        displayResults(data.results);
+        
+        if (page >= data.total_pages) {
+          hasMoreContent = false;
+        }
+      } catch (error) {
+        console.error('Error searching:', error);
+      }
+    }
   </script>
 </body>
 </html>
