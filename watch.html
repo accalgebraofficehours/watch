@@ -5,64 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pooxie Watch</title>
   <script>
-  // Add to the createElement override
-if (['iframe', 'object', 'embed'].includes(tagName.toLowerCase())) {
-  console.log(`[Pooxie] Blocked ${tagName} creation`);
-  return null;
-}
-// COMPLETE POPUP/WINDOW BLOCKER
-(function() {
-  // 1. Block all window.open() calls
+// COMPLETE TAB/POPUP DESTROYER
+(() => {
+  // 1. Block window.open globally
   window.open = function() {
-    console.log('[Pooxie] Blocked popup window');
-    return null;
+    console.log("[Pooxie] Blocked new tab attempt");
+    return { closed: true, focus: () => {}, close: () => {} }; // Return fake window
   };
 
-  // 2. Block all target="_blank" links
-  document.addEventListener('click', function(e) {
-    let target = e.target;
-    while (target && target.nodeName !== 'A') {
-      target = target.parentElement;
-    }
-    if (target && target.target === '_blank') {
-      e.preventDefault();
-      console.log('[Pooxie] Blocked new tab from link');
+  // 2. Hijack all link clicks
+  document.addEventListener('click', (e) => {
+    for (let el = e.target; el; el = el.parentElement) {
+      if (el.tagName === 'A' && el.target === '_blank') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        el.style.outline = '2px solid red';
+        setTimeout(() => el.style.outline = '', 2000);
+        console.log("[Pooxie] Blocked new tab from link");
+        return;
+      }
     }
   }, true);
 
-  // 3. Block iframe creation
+  // 3. Block keyboard shortcuts (Ctrl+Click, Middle-click)
+  document.addEventListener('auxclick', (e) => {
+    if (e.button === 1) e.preventDefault(); // Middle mouse button
+  }, true);
+
+  // 4. Block all iframes that could spawn popups
   const originalCreateElement = document.createElement;
-  document.createElement = function(tagName) {
-    if (tagName.toLowerCase() === 'iframe') {
-      console.log('[Pooxie] Blocked iframe creation');
-      return null;
+  document.createElement = function(tag) {
+    if (['iframe', 'frame', 'embed'].includes(tag.toLowerCase())) {
+      console.log("[Pooxie] Blocked iframe creation");
+      return document.createTextNode('');
     }
-    return originalCreateElement.apply(this, arguments);
+    return originalCreateElement.call(this, tag);
   };
 
-  // 4. Block form target="_blank"
-  document.addEventListener('submit', function(e) {
-    if (e.target.target === '_blank') {
-      e.preventDefault();
-      console.log('[Pooxie] Blocked form submission to new window');
-    }
-  });
+  // 5. Continuous DOM monitoring
+  new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeName === 'IFRAME') {
+          node.remove();
+          console.log("[Pooxie] Removed suspicious iframe");
+        }
+      });
+    });
+  }).observe(document, { subtree: true, childList: true });
 
-  // 5. Block JavaScript navigation
-  const originalAssign = window.location.assign;
-  window.location.assign = function(url) {
-    if (url !== window.location.href) {
-      console.log('[Pooxie] Blocked location redirect');
-      return false;
-    }
-    return originalAssign.apply(this, arguments);
-  };
-
-  // 6. Block meta refresh
-  const metaTags = document.querySelectorAll('meta[http-equiv="refresh"]');
-  metaTags.forEach(meta => meta.remove());
-
-  console.log('[Pooxie] Popup blocker activated');
+  console.log("[Pooxie] Tab blocker activated");
 })();
 </script>
 
