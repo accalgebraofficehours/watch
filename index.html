@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pooxie Watch</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
       background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
       background-size: 400% 400%;
       animation: gradientShift 20s ease infinite;
       color: white;
-      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       text-align: center;
     }
 
@@ -25,11 +28,11 @@
 
     .bubbles-container {
       position: fixed;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
+      top: 0;
+      left: 0;
       z-index: 0;
       pointer-events: none;
     }
@@ -55,44 +58,55 @@
       }
     }
 
-    .title {
-      margin-top: 20vh;
-      font-size: 3em;
-      font-weight: bold;
-      text-shadow: 0 0 15px #ff66cc;
-      z-index: 1;
-      position: relative;
+    .bubble:nth-child(odd) {
+      width: 15px;
+      height: 15px;
+      animation-duration: 12s;
+      left: 10%;
     }
 
-    .browse-btn {
+    .bubble:nth-child(even) {
+      width: 25px;
+      height: 25px;
+      animation-duration: 18s;
+      left: 80%;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    a.button {
+      display: inline-block;
       background-color: #ff66cc;
-      border: none;
-      padding: 15px 30px;
-      margin-top: 40px;
-      border-radius: 12px;
       color: white;
-      cursor: pointer;
+      padding: 15px 30px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 1.2rem;
       font-weight: bold;
-      font-size: 1.2em;
-      box-shadow: 0 0 25px rgba(255, 102, 204, 0.5);
+      box-shadow: 0 0 20px rgba(255, 102, 204, 0.4);
       transition: all 0.3s ease;
-      z-index: 1;
-      position: relative;
     }
 
-    .browse-btn:hover {
+    a.button:hover {
       background-color: #ff85d8;
       transform: scale(1.05);
     }
 
     .disclaimer {
-      position: fixed;
-      bottom: 10px;
-      left: 0;
-      right: 0;
-      font-size: 0.9em;
+      margin-top: 30px;
+      font-size: 0.9rem;
       color: #ccc;
-      z-index: 1;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
@@ -106,13 +120,10 @@
     <div class="bubble" style="left: 85%; animation-delay: 10s;"></div>
   </div>
 
-  <div class="title">Free Movies + TV Forever.</div>
-  <a href="discovery.html">
-    <button class="browse-btn">Browse Catalogue</button>
-  </a>
-
-  <div class="disclaimer">
-    We do not host the material provided on this site. All takedown requests should be processed by the host of the material.
+  <div class="content">
+    <h1>Free Movies, TV, no cap</h1>
+    <a href="discovery.html" class="button">Browse Catalogue</a>
+    <p class="disclaimer">We do not host the material provided on this site. All takedown requests should be processed by the host of the material.</p>
   </div>
 </body>
 </html>
