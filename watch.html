@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pooxie Watch</title>
   <script>
+  // Add to the createElement override
+if (['iframe', 'object', 'embed'].includes(tagName.toLowerCase())) {
+  console.log(`[Pooxie] Blocked ${tagName} creation`);
+  return null;
+}
 // COMPLETE POPUP/WINDOW BLOCKER
 (function() {
   // 1. Block all window.open() calls
