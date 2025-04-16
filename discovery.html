@@ -155,17 +155,20 @@
       z-index: 1000;
       display: none;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       backdrop-filter: blur(10px);
+      overflow-y: auto;
+      padding: 20px 0;
     }
 
     .detail-container {
-      width: 80%;
-      max-width: 800px;
+      width: 90%;
+      max-width: 1000px;
       background: linear-gradient(135deg, #24243e, #302b63);
       border-radius: 15px;
       overflow: hidden;
       box-shadow: 0 0 40px rgba(255, 102, 204, 0.3);
+      margin: 20px 0;
     }
 
     .detail-header {
@@ -290,6 +293,73 @@
       font-size: 0.9em;
     }
 
+    /* Episode List */
+    .episode-list {
+      margin-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 20px;
+    }
+
+    .episode-list h3 {
+      margin-bottom: 20px;
+      color: #ff66cc;
+    }
+
+    .episode {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .episode-thumbnail {
+      width: 200px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .episode-content {
+      flex-grow: 1;
+    }
+
+    .episode-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .episode-meta {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+      font-size: 0.9em;
+      color: #ccc;
+    }
+
+    .episode-description {
+      font-size: 0.9em;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .episode-play {
+      background: rgba(255, 102, 204, 0.2);
+      color: #ff66cc;
+      border: 1px solid #ff66cc;
+      padding: 5px 15px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .episode-play:hover {
+      background: #ff66cc;
+      color: white;
+    }
+
     /* Loading indicator */
     .loading {
       text-align: center;
@@ -311,6 +381,16 @@
       
       .detail-body {
         padding: 20px;
+      }
+      
+      .episode {
+        flex-direction: column;
+      }
+      
+      .episode-thumbnail {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
       }
     }
   </style>
@@ -379,6 +459,12 @@
             <p id="detailRelease">January 1, 2023</p>
           </div>
         </div>
+        
+        <!-- TV Show Episodes Section -->
+        <div class="episode-list" id="episodeList" style="display: none;">
+          <h3>Episodes</h3>
+          <div id="episodesContainer"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -408,6 +494,8 @@
     const detailDirector = document.getElementById('detailDirector');
     const detailRelease = document.getElementById('detailRelease');
     const detailPlay = document.getElementById('detailPlay');
+    const episodeList = document.getElementById('episodeList');
+    const episodesContainer = document.getElementById('episodesContainer');
 
     // State
     let currentMedia = {};
@@ -471,35 +559,46 @@
       currentCategory = category;
       currentPage = page;
       
-      let url;
+      let movieUrl, tvUrl;
+      
       switch(category) {
         case 'popular':
-          url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`;
+          movieUrl = `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`;
+          tvUrl = `${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${page}`;
           break;
         case 'trending':
-          url = `${BASE_URL}/trending/movie/day?api_key=${API_KEY}&page=${page}`;
+          movieUrl = `${BASE_URL}/trending/movie/day?api_key=${API_KEY}&page=${page}`;
+          tvUrl = `${BASE_URL}/trending/tv/day?api_key=${API_KEY}&page=${page}`;
           break;
         case 'top_rated':
-          url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&page=${page}`;
+          movieUrl = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&page=${page}`;
+          tvUrl = `${BASE_URL}/tv/top_rated?api_key=${API_KEY}&page=${page}`;
           break;
         default:
           if (GENRE_IDS[category]) {
-            url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${GENRE_IDS[category]}&page=${page}`;
+            movieUrl = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${GENRE_IDS[category]}&page=${page}`;
+            tvUrl = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${GENRE_IDS[category]}&page=${page}`;
           }
       }
 
       try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const [moviesResponse, tvResponse] = await Promise.all([
+          fetch(movieUrl).then(r => r.json()),
+          fetch(tvUrl).then(r => r.json())
+        ]);
         
         if (page === 1) {
           resultsContainer.innerHTML = '';
           hasMoreContent = true;
         }
         
-        displayResults(data.results);
+        // Combine results with TV shows first
+        const combinedResults = [...tvResponse.results.map(item => ({ ...item, isTV: true })), 
+                         ...moviesResponse.results.map(item => ({ ...item, isTV: false }))];
         
-        if (page >= data.total_pages) {
+        displayResults(combinedResults);
+        
+        if (page >= Math.min(moviesResponse.total_pages, tvResponse.total_pages)) {
           hasMoreContent = false;
         }
       } catch (error) {
@@ -516,13 +615,18 @@
       }
 
       items.forEach(item => {
+        const title = item.isTV ? item.name : item.title;
+        const releaseDate = item.isTV ? item.first_air_date : item.release_date;
+        const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
+        
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <img src="${item.poster_path ? IMG_BASE + 'w500' + item.poster_path : 'https://via.placeholder.com/500x750?text=No+Image'}" alt="${item.title}" loading="lazy">
+          <img src="${item.poster_path ? IMG_BASE + 'w500' + item.poster_path : 'https://via.placeholder.com/500x750?text=No+Image'}" alt="${title}" loading="lazy">
           <div class="card-content">
-            <h3>${item.title}</h3>
+            <h3>${title}</h3>
             <p>${item.overview || "No description available."}</p>
+            <button>▶ ${item.isTV ? 'Show Info' : 'Play'}</button>
           </div>
         `;
         card.addEventListener('click', () => showDetails(item));
@@ -536,70 +640,127 @@
         detailHeader.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3))';
         detailTitle.textContent = 'Loading...';
         detailOverview.textContent = '';
+        episodeList.style.display = 'none';
+        episodesContainer.innerHTML = '';
         detailOverlay.style.display = 'flex';
 
-        // Fetch additional details
-        const [details, credits] = await Promise.all([
-          fetch(`${BASE_URL}/movie/${item.id}?api_key=${API_KEY}`).then(r => r.json()),
-          fetch(`${BASE_URL}/movie/${item.id}/credits?api_key=${API_KEY}`).then(r => r.json())
-        ]);
+        if (item.isTV) {
+          // TV Show details
+          const [details, credits] = await Promise.all([
+            fetch(`${BASE_URL}/tv/${item.id}?api_key=${API_KEY}`).then(r => r.json()),
+            fetch(`${BASE_URL}/tv/${item.id}/credits?api_key=${API_KEY}`).then(r => r.json())
+          ]);
 
-        // Set background image
-        if (details.backdrop_path) {
-          detailHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${IMG_BASE}original${details.backdrop_path})`;
-        }
+          // Set background image
+          if (details.backdrop_path) {
+            detailHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${IMG_BASE}original${details.backdrop_path})`;
+          }
 
-        // Set text content
-        detailTitle.textContent = details.title;
-        
-        // Get US certification or default to NR
-        const releaseDates = await fetch(`${BASE_URL}/movie/${item.id}/release_dates?api_key=${API_KEY}`).then(r => r.json());
-        const usCert = releaseDates.results.find(r => r.iso_3166_1 === 'US')?.release_dates[0]?.certification;
-        detailRating.textContent = usCert || 'NR';
-        
-        detailYear.textContent = new Date(details.release_date).getFullYear();
-        
-        // Format runtime
-        if (details.runtime) {
-          const hours = Math.floor(details.runtime / 60);
-          const mins = details.runtime % 60;
-          detailRuntime.textContent = `${hours}h ${mins}m`;
+          // Set text content
+          detailTitle.textContent = details.name;
+          detailRating.textContent = details.content_ratings?.results?.find(r => r.iso_3166_1 === 'US')?.rating || 'NR';
+          detailYear.textContent = new Date(details.first_air_date).getFullYear();
+          detailRuntime.textContent = `${details.number_of_seasons} Season${details.number_of_seasons !== 1 ? 's' : ''}`;
+          detailScore.textContent = `⭐ ${details.vote_average?.toFixed(1) || 'N/A'}/10`;
+          detailOverview.textContent = details.overview || 'No overview available.';
+          
+          // Get top 3 cast members
+          const cast = credits.cast.slice(0, 3).map(p => p.name).join(', ');
+          detailCast.textContent = cast || 'N/A';
+          
+          // Get genres
+          const genres = details.genres?.map(g => g.name).join(', ');
+          detailGenre.textContent = genres || 'N/A';
+          
+          // Get creator
+          const creator = details.created_by?.map(c => c.name).join(', ');
+          detailDirector.textContent = creator || 'N/A';
+          
+          // Format release date
+          if (details.first_air_date) {
+            detailRelease.textContent = new Date(details.first_air_date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          } else {
+            detailRelease.textContent = 'N/A';
+          }
+          
+          // Store current media for play button
+          currentMedia = {
+            id: details.id,
+            type: 'tv',
+            season: 1,
+            episode: 1
+          };
+          
+          // Show episode list
+          episodeList.style.display = 'block';
+          await loadEpisodes(details.id, 1); // Load first season by default
         } else {
-          detailRuntime.textContent = 'N/A';
+          // Movie details
+          const [details, credits] = await Promise.all([
+            fetch(`${BASE_URL}/movie/${item.id}?api_key=${API_KEY}`).then(r => r.json()),
+            fetch(`${BASE_URL}/movie/${item.id}/credits?api_key=${API_KEY}`).then(r => r.json())
+          ]);
+
+          // Set background image
+          if (details.backdrop_path) {
+            detailHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${IMG_BASE}original${details.backdrop_path})`;
+          }
+
+          // Set text content
+          detailTitle.textContent = details.title;
+          
+          // Get US certification or default to NR
+          const releaseDates = await fetch(`${BASE_URL}/movie/${item.id}/release_dates?api_key=${API_KEY}`).then(r => r.json());
+          const usCert = releaseDates.results.find(r => r.iso_3166_1 === 'US')?.release_dates[0]?.certification;
+          detailRating.textContent = usCert || 'NR';
+          
+          detailYear.textContent = new Date(details.release_date).getFullYear();
+          
+          // Format runtime
+          if (details.runtime) {
+            const hours = Math.floor(details.runtime / 60);
+            const mins = details.runtime % 60;
+            detailRuntime.textContent = `${hours}h ${mins}m`;
+          } else {
+            detailRuntime.textContent = 'N/A';
+          }
+          
+          detailScore.textContent = `⭐ ${details.vote_average?.toFixed(1) || 'N/A'}/10`;
+          detailOverview.textContent = details.overview || 'No overview available.';
+          
+          // Get top 3 cast members
+          const cast = credits.cast.slice(0, 3).map(p => p.name).join(', ');
+          detailCast.textContent = cast || 'N/A';
+          
+          // Get genres
+          const genres = details.genres?.map(g => g.name).join(', ');
+          detailGenre.textContent = genres || 'N/A';
+          
+          // Get director
+          const director = credits.crew?.find(p => p.job === 'Director')?.name;
+          detailDirector.textContent = director || 'N/A';
+          
+          // Format release date
+          if (details.release_date) {
+            detailRelease.textContent = new Date(details.release_date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          } else {
+            detailRelease.textContent = 'N/A';
+          }
+          
+          // Store current media for play button
+          currentMedia = {
+            id: details.id,
+            type: 'movie'
+          };
         }
-        
-        detailScore.textContent = `⭐ ${details.vote_average?.toFixed(1) || 'N/A'}/10`;
-        detailOverview.textContent = details.overview || 'No overview available.';
-        
-        // Get top 3 cast members
-        const cast = credits.cast.slice(0, 3).map(p => p.name).join(', ');
-        detailCast.textContent = cast || 'N/A';
-        
-        // Get genres
-        const genres = details.genres?.map(g => g.name).join(', ');
-        detailGenre.textContent = genres || 'N/A';
-        
-        // Get director
-        const director = credits.crew?.find(p => p.job === 'Director')?.name;
-        detailDirector.textContent = director || 'N/A';
-        
-        // Format release date
-        if (details.release_date) {
-          detailRelease.textContent = new Date(details.release_date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          });
-        } else {
-          detailRelease.textContent = 'N/A';
-        }
-        
-        // Store current media for play button
-        currentMedia = {
-          id: details.id,
-          type: 'movie'
-        };
-        
       } catch (error) {
         console.error('Error loading details:', error);
         detailTitle.textContent = 'Error loading details';
@@ -607,8 +768,62 @@
       }
     }
 
+    async function loadEpisodes(tvId, seasonNumber) {
+      try {
+        const seasonDetails = await fetch(`${BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`).then(r => r.json());
+        
+        episodesContainer.innerHTML = '';
+        
+        seasonDetails.episodes.forEach(episode => {
+          const episodeElement = document.createElement('div');
+          episodeElement.className = 'episode';
+          episodeElement.innerHTML = `
+            <img src="${episode.still_path ? IMG_BASE + 'w300' + episode.still_path : 'https://via.placeholder.com/300x169?text=No+Image'}" 
+                 alt="${episode.name}" class="episode-thumbnail">
+            <div class="episode-content">
+              <div class="episode-title">Episode ${episode.episode_number}: ${episode.name}</div>
+              <div class="episode-meta">
+                <span>${episode.runtime || 'N/A'} min</span>
+                <span>⭐ ${episode.vote_average?.toFixed(1) || 'N/A'}/10</span>
+                <span>${new Date(episode.air_date).toLocaleDateString()}</span>
+              </div>
+              <p class="episode-description">${episode.overview || 'No description available.'}</p>
+              <button class="episode-play" data-season="${seasonNumber}" data-episode="${episode.episode_number}">
+                ▶ Play Episode
+              </button>
+            </div>
+          `;
+          episodesContainer.appendChild(episodeElement);
+        });
+        
+        // Add event listeners to episode play buttons
+        document.querySelectorAll('.episode-play').forEach(button => {
+          button.addEventListener('click', (e) => {
+            const season = e.target.dataset.season;
+            const episode = e.target.dataset.episode;
+            play('tv', currentMedia.id, season, episode);
+          });
+        });
+      } catch (error) {
+        console.error('Error loading episodes:', error);
+        episodesContainer.innerHTML = '<p>Error loading episodes. Please try again.</p>';
+      }
+    }
+
     function handlePlayClick() {
-      window.location.href = `watch.html?type=${currentMedia.type}&id=${currentMedia.id}`;
+      if (currentMedia.type === 'tv') {
+        play('tv', currentMedia.id, currentMedia.season, currentMedia.episode);
+      } else {
+        play('movie', currentMedia.id);
+      }
+    }
+
+    function play(type, id, season = null, episode = null) {
+      let url = `watch.html?type=${type}&id=${id}`;
+      if (type === 'tv' && season && episode) {
+        url += `&season=${season}&episode=${episode}`;
+      }
+      window.location.href = url;
     }
 
     function handleCategoryClick(e) {
@@ -638,17 +853,23 @@
 
     async function search(query, page = 1) {
       try {
-        const response = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`);
-        const data = await response.json();
+        const [movieSearch, tvSearch] = await Promise.all([
+          fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`).then(r => r.json()),
+          fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`).then(r => r.json())
+        ]);
         
         if (page === 1) {
           resultsContainer.innerHTML = '';
           hasMoreContent = true;
         }
         
-        displayResults(data.results);
+        // Combine results with TV shows first
+        const combinedResults = [...tvSearch.results.map(item => ({ ...item, isTV: true })), 
+                         ...movieSearch.results.map(item => ({ ...item, isTV: false }))];
         
-        if (page >= data.total_pages) {
+        displayResults(combinedResults);
+        
+        if (page >= Math.min(movieSearch.total_pages, tvSearch.total_pages)) {
           hasMoreContent = false;
         }
       } catch (error) {
