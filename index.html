@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pooxie Watch</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
+      background-size: 400% 400%;
+      animation: gradientShift 20s ease infinite;
+      color: white;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .bubbles-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: rise 15s linear infinite;
+    }
+
+    @keyframes rise {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-120vh) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    .title {
+      margin-top: 20vh;
+      font-size: 3em;
+      font-weight: bold;
+      text-shadow: 0 0 15px #ff66cc;
+      z-index: 1;
+      position: relative;
+    }
+
+    .browse-btn {
+      background-color: #ff66cc;
+      border: none;
+      padding: 15px 30px;
+      margin-top: 40px;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2em;
+      box-shadow: 0 0 25px rgba(255, 102, 204, 0.5);
+      transition: all 0.3s ease;
+      z-index: 1;
+      position: relative;
+    }
+
+    .browse-btn:hover {
+      background-color: #ff85d8;
+      transform: scale(1.05);
+    }
+
+    .disclaimer {
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      font-size: 0.9em;
+      color: #ccc;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="bubbles-container">
+    <div class="bubble" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="bubble" style="left: 25%; animation-delay: 2s;"></div>
+    <div class="bubble" style="left: 40%; animation-delay: 4s;"></div>
+    <div class="bubble" style="left: 55%; animation-delay: 6s;"></div>
+    <div class="bubble" style="left: 70%; animation-delay: 8s;"></div>
+    <div class="bubble" style="left: 85%; animation-delay: 10s;"></div>
+  </div>
+
+  <div class="title">Free Movies + TV Forever.</div>
+  <a href="discovery.html">
+    <button class="browse-btn">Browse Catalogue</button>
+  </a>
+
+  <div class="disclaimer">
+    We do not host the material provided on this site. All takedown requests should be processed by the host of the material.
+  </div>
+</body>
+</html>
