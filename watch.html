@@ -5,47 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pooxie Watch</title>
   <script>
-(function() {
-    const originalOpen = window.open;
+// DOMAIN-SPECIFIC POPUP BLOCKER
+const allowedDomains = [
+  'trustedsource.com',
+  'legitadprovider.net'
+];
 
-    // Create a locked-down property that can't be overwritten
-    Object.defineProperty(window, 'open', {
-        get() {
-            return function () {
-                console.warn('Popup blocked!');
-                return null;
-            };
-        },
-        set() {
-            console.warn('Attempt to override window.open blocked.');
-        },
-        configurable: false,
-        enumerable: true
-    });
+// Block all unwanted popups
+window.originalOpen = window.open;
+window.open = function(url, target, features) {
+  // Check if the popup is from an allowed domain
+  const isAllowed = allowedDomains.some(domain => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname.endsWith(domain);
+    } catch {
+      return false;
+    }
+  });
 
-    // Re-check every few milliseconds in case some script sneaks it in
-    const watchForHijack = setInterval(() => {
-        if (window.open !== originalOpen && window.open.toString().indexOf('Popup blocked!') === -1) {
-            console.warn('Restoring blocked window.open.');
-            Object.defineProperty(window, 'open', {
-                get() {
-                    return function () {
-                        console.warn('Popup blocked!');
-                        return null;
-                    };
-                },
-                set() {
-                    console.warn('Attempt to override window.open blocked.');
-                },
-                configurable: false
-            });
+  if (!isAllowed) {
+    console.log('Blocked popup to:', url);
+    return null; // Block the popup
+  }
+  
+  // Allow popup for trusted domains
+  return window.originalOpen(url, target, features);
+};
+
+// MutationObserver to catch dynamically created popups
+const observer = new MutationObserver(mutations => {
+  mutations.forEach(mutation => {
+    mutation.addedNodes.forEach(node => {
+      if (node.nodeName === 'IFRAME') {
+        const src = node.getAttribute('src') || '';
+        const isAllowed = allowedDomains.some(domain => src.includes(domain));
+        
+        if (!isAllowed) {
+          console.log('Blocked iframe popup:', src);
+          node.remove();
         }
-    }, 500);
+      }
+    });
+  });
+});
 
-    // Optional: Stop checking after a while
-    setTimeout(() => clearInterval(watchForHijack), 30000); // Stop after 30s
-})();
-  </script>
+observer.observe(document.body, {
+  childList: true,
+  subtree: true
+});
+
+// Block window.open() from setTimeout/setInterval
+const originalSetTimeout = window.setTimeout;
+const originalSetInterval = window.setInterval;
+
+window.setTimeout = function(fn, delay) {
+  if (typeof fn === 'string' && fn.includes('window.open')) {
+    console.log('Blocked setTimeout popup');
+    return 0;
+  }
+  return originalSetTimeout(fn, delay);
+};
+
+window.setInterval = function(fn, delay) {
+  if (typeof fn === 'string' && fn.includes('window.open')) {
+    console.log('Blocked setInterval popup');
+    return 0;
+  }
+  return originalSetInterval(fn, delay);
+};
+
+// Block click handlers that open popups
+document.addEventListener('click', function(e) {
+  let target = e.target;
+  while (target) {
+    const onclick = target.getAttribute('onclick');
+    if (onclick && onclick.includes('window.open')) {
+      const isAllowed = allowedDomains.some(domain => onclick.includes(domain));
+      if (!isAllowed) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Blocked onclick popup');
+        return;
+      }
+    }
+    target = target.parentElement;
+  }
+}, true);
+
+// Block anchor targets
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('a[target="_blank"]').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    const isAllowed = allowedDomains.some(domain => href.includes(domain));
+    
+    if (!isAllowed) {
+      a.removeAttribute('target');
+      a.addEventListener('click', function(e) {
+        if (!isAllowed) {
+          e.preventDefault();
+          console.log('Blocked _blank popup');
+        }
+      });
+    }
+  });
+});
+</script>
 
   <style>
     body {
