@@ -149,7 +149,7 @@
     }
 
     function play(type, id) {
-      const url = `index.html?type=${type}&id=${id}${type === 'tv' ? '&season=1&episode=1' : ''}`;
+      const url = `watch.html?type=${type}&id=${id}${type === 'tv' ? '&season=1&episode=1' : ''}`;
       window.location.href = url;
     }
 
