@@ -5,110 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pooxie Watch</title>
   <script>
-// DOMAIN-SPECIFIC POPUP BLOCKER
-const allowedDomains = [
-  'poodleschool.github.io'
-];
+// COMPLETE POPUP/WINDOW BLOCKER
+(function() {
+  // 1. Block all window.open() calls
+  window.open = function() {
+    console.log('[Pooxie] Blocked popup window');
+    return null;
+  };
 
-// Block all unwanted popups
-window.originalOpen = window.open;
-window.open = function(url, target, features) {
-  // Check if the popup is from an allowed domain
-  const isAllowed = allowedDomains.some(domain => {
-    try {
-      const urlObj = new URL(url);
-      return urlObj.hostname.endsWith(domain);
-    } catch {
+  // 2. Block all target="_blank" links
+  document.addEventListener('click', function(e) {
+    let target = e.target;
+    while (target && target.nodeName !== 'A') {
+      target = target.parentElement;
+    }
+    if (target && target.target === '_blank') {
+      e.preventDefault();
+      console.log('[Pooxie] Blocked new tab from link');
+    }
+  }, true);
+
+  // 3. Block iframe creation
+  const originalCreateElement = document.createElement;
+  document.createElement = function(tagName) {
+    if (tagName.toLowerCase() === 'iframe') {
+      console.log('[Pooxie] Blocked iframe creation');
+      return null;
+    }
+    return originalCreateElement.apply(this, arguments);
+  };
+
+  // 4. Block form target="_blank"
+  document.addEventListener('submit', function(e) {
+    if (e.target.target === '_blank') {
+      e.preventDefault();
+      console.log('[Pooxie] Blocked form submission to new window');
+    }
+  });
+
+  // 5. Block JavaScript navigation
+  const originalAssign = window.location.assign;
+  window.location.assign = function(url) {
+    if (url !== window.location.href) {
+      console.log('[Pooxie] Blocked location redirect');
       return false;
     }
-  });
+    return originalAssign.apply(this, arguments);
+  };
 
-  if (!isAllowed) {
-    console.log('Blocked popup to:', url);
-    return null; // Block the popup
-  }
-  
-  // Allow popup for trusted domains
-  return window.originalOpen(url, target, features);
-};
+  // 6. Block meta refresh
+  const metaTags = document.querySelectorAll('meta[http-equiv="refresh"]');
+  metaTags.forEach(meta => meta.remove());
 
-// MutationObserver to catch dynamically created popups
-const observer = new MutationObserver(mutations => {
-  mutations.forEach(mutation => {
-    mutation.addedNodes.forEach(node => {
-      if (node.nodeName === 'IFRAME') {
-        const src = node.getAttribute('src') || '';
-        const isAllowed = allowedDomains.some(domain => src.includes(domain));
-        
-        if (!isAllowed) {
-          console.log('Blocked iframe popup:', src);
-          node.remove();
-        }
-      }
-    });
-  });
-});
-
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-
-// Block window.open() from setTimeout/setInterval
-const originalSetTimeout = window.setTimeout;
-const originalSetInterval = window.setInterval;
-
-window.setTimeout = function(fn, delay) {
-  if (typeof fn === 'string' && fn.includes('window.open')) {
-    console.log('Blocked setTimeout popup');
-    return 0;
-  }
-  return originalSetTimeout(fn, delay);
-};
-
-window.setInterval = function(fn, delay) {
-  if (typeof fn === 'string' && fn.includes('window.open')) {
-    console.log('Blocked setInterval popup');
-    return 0;
-  }
-  return originalSetInterval(fn, delay);
-};
-
-// Block click handlers that open popups
-document.addEventListener('click', function(e) {
-  let target = e.target;
-  while (target) {
-    const onclick = target.getAttribute('onclick');
-    if (onclick && onclick.includes('window.open')) {
-      const isAllowed = allowedDomains.some(domain => onclick.includes(domain));
-      if (!isAllowed) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('Blocked onclick popup');
-        return;
-      }
-    }
-    target = target.parentElement;
-  }
-}, true);
-
-// Block anchor targets
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('a[target="_blank"]').forEach(a => {
-    const href = a.getAttribute('href') || '';
-    const isAllowed = allowedDomains.some(domain => href.includes(domain));
-    
-    if (!isAllowed) {
-      a.removeAttribute('target');
-      a.addEventListener('click', function(e) {
-        if (!isAllowed) {
-          e.preventDefault();
-          console.log('Blocked _blank popup');
-        }
-      });
-    }
-  });
-});
+  console.log('[Pooxie] Popup blocker activated');
+})();
 </script>
 
   <style>
