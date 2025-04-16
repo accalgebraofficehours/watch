@@ -170,6 +170,119 @@
       font-size: 1.2em;
       color: #ff66cc;
     }
+        .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #24243e, #302b63);
+      padding: 25px;
+      border-radius: 15px;
+      width: 85%;
+      max-width: 450px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 30px rgba(255, 102, 204, 0.3);
+      border: 1px solid #ff66cc;
+    }
+
+    .modal-title {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: #ff66cc;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .season-select, .episode-select {
+      margin-bottom: 20px;
+    }
+
+    .season-select label, .episode-select label {
+      display: block;
+      margin-bottom: 8px;
+      color: #ff85d8;
+      font-weight: 600;
+    }
+
+    .season-select select, .episode-select select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: 1px solid #ff66cc;
+      font-size: 16px;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .modal-buttons button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      flex: 1;
+    }
+
+    .play-btn {
+      background: linear-gradient(to right, #ff66cc, #ff85d8);
+      color: white;
+    }
+
+    .play-btn:hover {
+      background: linear-gradient(to right, #ff85d8, #ff66cc);
+      box-shadow: 0 0 15px rgba(255, 102, 204, 0.5);
+    }
+
+    .cancel-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .cancel-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Loading spinner for episodes */
+    .episode-loading {
+      text-align: center;
+      padding: 15px;
+      color: #ff66cc;
+      display: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .modal-content {
+        width: 95%;
+        padding: 15px;
+      }
+    }
   </style>
 </head>
 <body>
