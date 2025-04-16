@@ -305,6 +305,21 @@
       color: #ff66cc;
     }
 
+    .season-selector {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .season-selector select {
+      padding: 8px 15px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
     .episode {
       display: flex;
       gap: 20px;
@@ -360,6 +375,73 @@
       color: white;
     }
 
+    /* Season/Episode Selection Modal */
+    .selection-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1001;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .selection-content {
+      background: #302b63;
+      padding: 25px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      border: 1px solid #ff66cc;
+    }
+
+    .selection-content h3 {
+      margin-top: 0;
+      color: #ff66cc;
+    }
+
+    .selection-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .selection-row select {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .selection-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .selection-buttons button {
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .selection-play {
+      background: #ff66cc;
+      color: white;
+      border: none;
+    }
+
+    .selection-cancel {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
     /* Loading indicator */
     .loading {
       text-align: center;
@@ -401,15 +483,15 @@
     <input type="text" id="searchInput" placeholder="Search movies or TV shows...">
   </div>
   <div class="category-tabs" id="categoryTabs">
-    <div class="category-tab active" data-category="popular">Popular</div>
-    <div class="category-tab" data-category="trending">Trending</div>
+    <div class="category-tab active" data-category="trending">Trending</div>
+    <div class="category-tab" data-category="popular">Popular</div>
     <div class="category-tab" data-category="top_rated">Top Rated</div>
     <div class="category-tab" data-category="action">Action</div>
     <div class="category-tab" data-category="comedy">Comedy</div>
     <div class="category-tab" data-category="sci_fi">Sci-Fi</div>
   </div>
   <div class="category-section">
-    <div class="category-title" id="currentCategory">Popular</div>
+    <div class="category-title" id="currentCategory">Trending</div>
     <div class="grid" id="results"></div>
     <div class="loading" id="loadingIndicator">Loading more content...</div>
   </div>
@@ -462,9 +544,28 @@
         
         <!-- TV Show Episodes Section -->
         <div class="episode-list" id="episodeList" style="display: none;">
+          <div class="season-selector">
+            <span>Season:</span>
+            <select id="seasonSelect"></select>
+          </div>
           <h3>Episodes</h3>
           <div id="episodesContainer"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Season/Episode Selection Modal -->
+  <div class="selection-modal" id="selectionModal">
+    <div class="selection-content">
+      <h3>Select Season and Episode</h3>
+      <div class="selection-row">
+        <select id="modalSeasonSelect"></select>
+        <select id="modalEpisodeSelect"></select>
+      </div>
+      <div class="selection-buttons">
+        <button class="selection-cancel" id="selectionCancel">Cancel</button>
+        <button class="selection-play" id="selectionPlay">Play</button>
       </div>
     </div>
   </div>
@@ -495,15 +596,22 @@
     const detailRelease = document.getElementById('detailRelease');
     const detailPlay = document.getElementById('detailPlay');
     const episodeList = document.getElementById('episodeList');
+    const seasonSelect = document.getElementById('seasonSelect');
     const episodesContainer = document.getElementById('episodesContainer');
+    const selectionModal = document.getElementById('selectionModal');
+    const modalSeasonSelect = document.getElementById('modalSeasonSelect');
+    const modalEpisodeSelect = document.getElementById('modalEpisodeSelect');
+    const selectionCancel = document.getElementById('selectionCancel');
+    const selectionPlay = document.getElementById('selectionPlay');
 
     // State
     let currentMedia = {};
-    let currentCategory = 'popular';
+    let currentCategory = 'trending'; // Default to trending
     let currentPage = 1;
     let isLoading = false;
     let hasMoreContent = true;
     let currentSearchQuery = '';
+    let tvSeasons = [];
 
     // Genre IDs mapping
     const GENRE_IDS = {
@@ -523,6 +631,9 @@
     searchInput.addEventListener('input', handleSearch);
     detailClose.addEventListener('click', () => detailOverlay.style.display = 'none');
     detailPlay.addEventListener('click', handlePlayClick);
+    seasonSelect.addEventListener('change', handleSeasonChange);
+    selectionCancel.addEventListener('click', () => selectionModal.style.display = 'none');
+    selectionPlay.addEventListener('click', handleSelectionPlay);
 
     // Setup infinite scroll
     function setupInfiniteScroll() {
@@ -691,9 +802,11 @@
           currentMedia = {
             id: details.id,
             type: 'tv',
-            season: 1,
-            episode: 1
+            seasons: details.seasons.filter(s => s.season_number > 0)
           };
+          
+          // Populate season selector
+          populateSeasonSelector(currentMedia.seasons);
           
           // Show episode list
           episodeList.style.display = 'block';
@@ -768,6 +881,30 @@
       }
     }
 
+    function populateSeasonSelector(seasons) {
+      seasonSelect.innerHTML = '';
+      modalSeasonSelect.innerHTML = '';
+      
+      seasons.forEach(season => {
+        const option = document.createElement('option');
+        option.value = season.season_number;
+        option.textContent = `Season ${season.season_number}`;
+        seasonSelect.appendChild(option.cloneNode(true));
+        modalSeasonSelect.appendChild(option);
+      });
+      
+      // Set default season to the latest one
+      if (seasons.length > 0) {
+        seasonSelect.value = seasons[seasons.length - 1].season_number;
+        modalSeasonSelect.value = seasons[seasons.length - 1].season_number;
+      }
+    }
+
+    async function handleSeasonChange() {
+      const seasonNumber = parseInt(seasonSelect.value);
+      await loadEpisodes(currentMedia.id, seasonNumber);
+    }
+
     async function loadEpisodes(tvId, seasonNumber) {
       try {
         const seasonDetails = await fetch(`${BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`).then(r => r.json());
@@ -785,7 +922,7 @@
               <div class="episode-meta">
                 <span>${episode.runtime || 'N/A'} min</span>
                 <span>⭐ ${episode.vote_average?.toFixed(1) || 'N/A'}/10</span>
-                <span>${new Date(episode.air_date).toLocaleDateString()}</span>
+                <span>${episode.air_date ? new Date(episode.air_date).toLocaleDateString() : 'N/A'}</span>
               </div>
               <p class="episode-description">${episode.overview || 'No description available.'}</p>
               <button class="episode-play" data-season="${seasonNumber}" data-episode="${episode.episode_number}">
@@ -810,12 +947,41 @@
       }
     }
 
-    function handlePlayClick() {
+    async function handlePlayClick() {
       if (currentMedia.type === 'tv') {
-        play('tv', currentMedia.id, currentMedia.season, currentMedia.episode);
+        // For TV shows, show season/episode selection modal
+        await showSeasonEpisodeModal();
       } else {
+        // For movies, play directly
         play('movie', currentMedia.id);
       }
+    }
+
+    async function showSeasonEpisodeModal() {
+      try {
+        // Populate episode selector for the selected season
+        const seasonNumber = parseInt(modalSeasonSelect.value);
+        const seasonDetails = await fetch(`${BASE_URL}/tv/${currentMedia.id}/season/${seasonNumber}?api_key=${API_KEY}`).then(r => r.json());
+        
+        modalEpisodeSelect.innerHTML = '';
+        seasonDetails.episodes.forEach(episode => {
+          const option = document.createElement('option');
+          option.value = episode.episode_number;
+          option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
+          modalEpisodeSelect.appendChild(option);
+        });
+        
+        selectionModal.style.display = 'flex';
+      } catch (error) {
+        console.error('Error loading episodes for modal:', error);
+      }
+    }
+
+    function handleSelectionPlay() {
+      const season = modalSeasonSelect.value;
+      const episode = modalEpisodeSelect.value;
+      selectionModal.style.display = 'none';
+      play('tv', currentMedia.id, season, episode);
     }
 
     function play(type, id, season = null, episode = null) {
