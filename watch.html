@@ -5,27 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pooxie Watch</title>
   <script>
-    // Block all window.open attempts on your site
-    window.open = function () {
-        console.warn("Popup attempt blocked.");
-        return null;
-    };
+(function() {
+    const originalOpen = window.open;
 
-    // Also prevent iframe popups (if any)
-    document.addEventListener('DOMContentLoaded', () => {
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            try {
-                iframe.contentWindow.open = function () {
-                    console.warn("Popup attempt inside iframe blocked.");
-                    return null;
-                };
-            } catch (e) {
-                console.warn("Could not block iframe popup (cross-origin).");
-            }
-        });
+    // Create a locked-down property that can't be overwritten
+    Object.defineProperty(window, 'open', {
+        get() {
+            return function () {
+                console.warn('Popup blocked!');
+                return null;
+            };
+        },
+        set() {
+            console.warn('Attempt to override window.open blocked.');
+        },
+        configurable: false,
+        enumerable: true
     });
+
+    // Re-check every few milliseconds in case some script sneaks it in
+    const watchForHijack = setInterval(() => {
+        if (window.open !== originalOpen && window.open.toString().indexOf('Popup blocked!') === -1) {
+            console.warn('Restoring blocked window.open.');
+            Object.defineProperty(window, 'open', {
+                get() {
+                    return function () {
+                        console.warn('Popup blocked!');
+                        return null;
+                    };
+                },
+                set() {
+                    console.warn('Attempt to override window.open blocked.');
+                },
+                configurable: false
+            });
+        }
+    }, 500);
+
+    // Optional: Stop checking after a while
+    setTimeout(() => clearInterval(watchForHijack), 30000); // Stop after 30s
+})();
   </script>
+
   <style>
     body {
       margin: 0;
